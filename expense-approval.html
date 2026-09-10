@@ -6,21 +6,21 @@
     <title>Expense Approval Center</title>
     <style>
         :root {
-            --navy: #15324b;
-            --blue: #0875b9;
-            --blue-dark: #00588f;
-            --blue-soft: #eaf4fa;
-            --ink: #1d2a35;
-            --muted: #607080;
-            --line: #d7e0e7;
-            --surface: #ffffff;
-            --canvas: #f4f7f9;
-            --green: #18794e;
-            --green-soft: #eaf7f0;
-            --red: #b42318;
-            --red-soft: #fff0ee;
-            --amber: #946200;
-            --shadow: 0 10px 28px rgba(24, 49, 72, 0.08);
+            --navy: var(--theme-heading, #15324b);
+            --blue: var(--theme-action, #0875b9);
+            --blue-dark: var(--theme-heading, #00588f);
+            --blue-soft: var(--theme-tint, #eaf4fa);
+            --ink: var(--theme-ink, #1d2a35);
+            --muted: var(--theme-muted, #607080);
+            --line: var(--theme-line, #d7e0e7);
+            --surface: var(--theme-surface, #ffffff);
+            --canvas: var(--theme-page, #f4f7f9);
+            --green: var(--theme-success, #18794e);
+            --green-soft: var(--theme-success-surface, #eaf7f0);
+            --red: var(--theme-danger, #b42318);
+            --red-soft: var(--theme-danger-surface, #fff0ee);
+            --amber: var(--theme-warning, #946200);
+            --shadow: var(--theme-shadow, 0 10px 28px rgba(24, 49, 72, 0.08));
         }
 
         * { box-sizing: border-box; }
@@ -34,7 +34,7 @@
         }
 
         .topbar {
-            background: var(--navy);
+            background: var(--theme-topbar, var(--navy));
             color: #fff;
             min-height: 64px;
         }
@@ -64,7 +64,7 @@
             display: grid;
             place-items: center;
             border-radius: 7px;
-            background: #fff;
+            background: var(--theme-surface, #fff);
             color: var(--navy);
             font-size: 0.83rem;
         }
@@ -90,7 +90,7 @@
             min-width: 104px;
             padding: 7px 28px 7px 9px;
             border: 1px solid rgba(255,255,255,.45);
-            background: #fff;
+            background: var(--theme-surface, #fff);
             color: var(--navy);
             font-size: .82rem;
             font-weight: 700;
@@ -199,9 +199,9 @@
         select,
         textarea {
             width: 100%;
-            border: 1px solid #b8c6d0;
+            border: 1px solid var(--theme-line, #b8c6d0);
             border-radius: 5px;
-            background: #fbfcfd;
+            background: var(--theme-field, #fbfcfd);
             color: var(--ink);
             font: inherit;
             padding: 10px 11px;
@@ -219,7 +219,7 @@
             outline: none;
             border-color: var(--blue);
             box-shadow: 0 0 0 3px rgba(8, 117, 185, .13);
-            background: #fff;
+            background: var(--theme-surface, #fff);
         }
 
         .hint {
@@ -233,7 +233,7 @@
             justify-content: space-between;
             gap: 16px;
             padding: 12px 14px;
-            border: 1px solid #c5dbe8;
+            border: 1px solid var(--theme-line, #c5dbe8);
             border-radius: 6px;
             background: var(--blue-soft);
             color: var(--navy);
@@ -264,12 +264,12 @@
             color: #fff;
         }
 
-        .primary:hover { background: var(--blue-dark); }
+        .primary:hover { background: var(--theme-action-hover, #00588f); }
 
         .secondary {
-            background: #fff;
+            background: var(--theme-surface, #fff);
             color: var(--blue-dark);
-            border: 1px solid #a9c9dc;
+            border: 1px solid var(--theme-line, #a9c9dc);
         }
 
         .secondary:hover { background: var(--blue-soft); }
@@ -351,7 +351,7 @@
             font-size: .8rem;
         }
 
-        .checks li::before { content: "—"; color: #92a1ac; }
+        .checks li::before { content: "—"; color: var(--theme-muted, #92a1ac); }
         .checks li.pass::before { content: "✓"; color: var(--green); font-weight: 800; }
         .checks li.fail::before { content: "×"; color: var(--red); font-weight: 800; }
 
@@ -359,8 +359,8 @@
             margin-top: 16px;
             padding: 11px;
             border-radius: 5px;
-            background: #f2f5f7;
-            color: #354656;
+            background: var(--theme-muted-surface, #f2f5f7);
+            color: var(--theme-ink, #354656);
             font: .76rem Consolas, monospace;
             white-space: pre-wrap;
             overflow-wrap: anywhere;
@@ -384,7 +384,7 @@
             padding: 7px 12px;
             color: var(--blue-dark);
             background: var(--blue-soft);
-            border: 1px solid #c5dbe8;
+            border: 1px solid var(--theme-line, #c5dbe8);
             font-size: .78rem;
         }
 
@@ -406,14 +406,14 @@
         }
 
         th {
-            background: #edf4f8;
+            background: var(--theme-tint, #edf4f8);
             color: var(--navy);
             font-size: .75rem;
             letter-spacing: .03em;
             text-transform: uppercase;
         }
 
-        tbody tr:hover { background: #f8fbfc; }
+        tbody tr:hover { background: var(--theme-row, #f8fbfc); }
         td.purpose { max-width: 260px; }
 
         .table-status {
@@ -449,6 +449,8 @@
             .decision-body { padding: 17px; }
         }
     </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
 </head>
 <body>
 <header class="topbar">
@@ -594,7 +596,7 @@
     </section>
 </main>
 
-<script src="expense-rules.js"></script>
+<script src="expense-rules.js?v=5f528c5e7d01"></script>
 <script>
     (function () {
         'use strict';

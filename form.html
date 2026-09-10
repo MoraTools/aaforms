@@ -5,7 +5,7 @@
     <title>People List</title>
     <style>
         body {
-            background: #f3f3f3;
+            background: var(--theme-page, #f3f3f3);
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -13,14 +13,14 @@
         .container {
             max-width: 900px;
             margin: 40px auto;
-            background: #fff;
-            border: 1px solid #d1d5db;
+            background: var(--theme-surface, #fff);
+            border: 1px solid var(--theme-line, #d1d5db);
             border-radius: 6px;
             padding: 24px 32px 32px 32px;
         }
         h1 {
             font-size: 1.7em;
-            color: #005288;
+            color: var(--theme-heading, #005288);
             font-weight: 500;
             margin-top: 0;
             margin-bottom: 20px;
@@ -40,14 +40,14 @@
         label {
             margin-bottom: 3px;
             font-size: 1em;
-            color: #005288;
+            color: var(--theme-heading, #005288);
             font-weight: 600;
         }
         input[type="text"], select {
             padding: 6px 10px;
-            border: 1px solid #bdbdbd;
+            border: 1px solid var(--theme-line, #bdbdbd);
             border-radius: 3px;
-            background: #fafbfc;
+            background: var(--theme-field, #fafbfc);
             font-size: 1em;
             margin-bottom: 3px;
         }
@@ -61,7 +61,7 @@
             margin-top: 10px;
         }
         button[type="submit"] {
-            background: #0070b8;
+            background: var(--theme-action, #0070b8);
             color: #fff;
             border: none;
             border-radius: 3px;
@@ -72,13 +72,25 @@
             letter-spacing: 0.02em;
         }
         button[type="submit"]:hover {
-            background: #005288;
+            background: var(--theme-action-hover, #005288);
         }
+        .back {
+            display: inline-block;
+            margin-top: 24px;
+            padding: 10px 22px;
+            background: var(--theme-tint, #e7f3fa);
+            color: var(--theme-heading, #005288);
+            border: 1px solid var(--theme-line, #b6d2e6);
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back:hover { background: var(--theme-action, #0070b8); color: #fff; }
         /* Reset button style */
         #reset-btn {
-            background: #e7f3fa;
-            color: #005288;
-            border: 1px solid #b6d2e6;
+            background: var(--theme-tint, #e7f3fa);
+            color: var(--theme-heading, #005288);
+            border: 1px solid var(--theme-line, #b6d2e6);
             border-radius: 3px;
             padding: 7px 30px;
             font-size: 1em;
@@ -89,31 +101,31 @@
             transition: background 0.2s, color 0.2s;
         }
         #reset-btn:hover {
-            background: #0070b8;
+            background: var(--theme-action, #0070b8);
             color: #fff;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
-            background: #fff;
+            background: var(--theme-surface, #fff);
         }
         th, td {
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--theme-line, #d1d5db);
             padding: 10px 8px;
             font-size: 1em;
             text-align: left;
         }
         th {
-            background: #e7f3fa;
-            color: #1a2328;
+            background: var(--theme-tint, #e7f3fa);
+            color: var(--theme-ink, #1a2328);
             font-weight: 600;
         }
         tr:nth-child(even) td {
-            background: #f7fafb;
+            background: var(--theme-row, #f7fafb);
         }
         .no-people {
-            color: #7d8590;
+            color: var(--theme-muted, #7d8590);
             font-size: 1em;
             margin-top: 5px;
         }
@@ -125,6 +137,8 @@
             #reset-btn {width: 100%;}
         }
     </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
 </head>
 <body>
 <div class="container">
@@ -176,10 +190,12 @@
         </div>
     </form>
     <button id="reset-btn">Reset People List</button>
-    <h2 style="color:#005288;font-weight:600;margin:12px 0 4px 0;font-size:1.18em;">People List</h2>
+    <h2 style="color:var(--theme-heading, #005288);font-weight:600;margin:12px 0 4px 0;font-size:1.18em;">People List</h2>
     <div id="people-list"></div>
     <span class="no-people" id="no-people-msg" style="display:none;">No people yet. Add someone above.</span>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
 </div>
+<script src="progress.js?v=ee67cebaa63f"></script>
 <script>
     const defaultPeople = [
         {
@@ -287,11 +303,13 @@
         });
         savePeople(people);
         renderPeople();
+        AAProgress.set('form.html', true);
         document.getElementById('person-form').reset();
     };
 
     // Reset button logic
     document.getElementById('reset-btn').onclick = function() {
+        AAProgress.set('form.html', false);
         localStorage.removeItem(LS_KEY);
         renderPeople();
     };

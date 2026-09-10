@@ -1,0 +1,19 @@
+/* Shared presentation only. Each fixture owns its capture behavior. */
+.hard-case { line-height: 1.5; }
+.hard-case * { box-sizing: border-box; }
+.hard-case h2 { color: var(--theme-heading, #005288); font-size: 1.15rem; margin: 24px 0 12px; }
+.hard-case .task { background: var(--theme-tint, #e7f3fa); padding: 14px 18px; margin: 20px 0; }
+.hard-case .task p { margin: 0; }
+.hard-case .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.hard-case output { display: block; white-space: pre-wrap; overflow-wrap: anywhere; margin: 16px 0; }
+.hard-case :focus-visible { outline: 3px solid var(--theme-heading, #005288); outline-offset: 3px; }
+.hard-case button:disabled { background: var(--theme-disabled, #596874); cursor: wait; }
+.hard-case input:not([type=checkbox]), .hard-case select { min-height: 40px; max-width: 100%; }
+.hard-case .fg { min-width: 0; }
+.hard-case .frame-wrap iframe { display: block; height: 650px; }
+.embedded .container { margin: 0; padding: 16px; border: 0; }
+.embedded .intro, .embedded .back { display: none; }
+@media (max-width: 650px) {
+    .hard-case .container { margin: 12px auto; padding: 20px 16px; }
+    .hard-case .frame-wrap iframe { height: 760px; }
+}

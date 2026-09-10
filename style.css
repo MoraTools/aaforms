@@ -1,37 +1,37 @@
 body {
-    background: #f3f3f3;
+    background: var(--theme-page, #f3f3f3);
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    color: #1a2328;
+    color: var(--theme-ink, #1a2328);
 }
 .container {
     max-width: 900px;
     margin: 30px auto;
-    background: #fff;
-    border: 1px solid #d1d5db;
+    background: var(--theme-surface, #fff);
+    border: 1px solid var(--theme-line, #d1d5db);
     border-radius: 6px;
     padding: 28px 36px 40px 36px;
 }
 h1 {
     font-size: 1.5em;
-    color: #005288;
+    color: var(--theme-heading, #005288);
     font-weight: 500;
     margin: 0 0 6px 0;
 }
 .desc {
-    color: #3a4350;
+    color: var(--theme-muted, #3a4350);
     font-size: 0.97em;
     line-height: 1.5;
     margin: 0 0 20px 0;
 }
 .desc code {
-    background: #e7f3fa;
-    border: 1px solid #b6d2e6;
+    background: var(--theme-tint, #e7f3fa);
+    border: 1px solid var(--theme-line, #b6d2e6);
     border-radius: 3px;
     padding: 1px 5px;
     font-size: 0.9em;
-    color: #005288;
+    color: var(--theme-heading, #005288);
 }
 form {
     display: flex;
@@ -47,25 +47,25 @@ form {
 }
 label {
     font-size: 0.95em;
-    color: #005288;
+    color: var(--theme-heading, #005288);
     font-weight: 600;
     margin-bottom: 3px;
 }
 input[type=text], select, [contenteditable] {
     padding: 6px 10px;
-    border: 1px solid #bdbdbd;
+    border: 1px solid var(--theme-line, #bdbdbd);
     border-radius: 3px;
-    background: #fafbfc;
+    background: var(--theme-field, #fafbfc);
     font-size: 1em;
     font-family: inherit;
-    color: #1a2328;
+    color: var(--theme-ink, #1a2328);
 }
 .ce {
     min-height: 20px;
     white-space: pre-wrap;
 }
 [contenteditable]:focus {
-    outline: 1px solid #0070b8;
+    outline: 1px solid var(--theme-action, #0070b8);
 }
 .rg, .cg {
     display: flex;
@@ -81,24 +81,24 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 8px;
-    background: #fff;
+    background: var(--theme-surface, #fff);
 }
 th, td {
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--theme-line, #d1d5db);
     padding: 8px;
     text-align: left;
     font-size: 0.92em;
 }
 th {
-    background: #e7f3fa;
-    color: #1a2328;
+    background: var(--theme-tint, #e7f3fa);
+    color: var(--theme-ink, #1a2328);
     font-weight: 600;
 }
 tr:nth-child(even) td {
-    background: #f7fafb;
+    background: var(--theme-row, #f7fafb);
 }
 button, .divbtn {
-    background: #0070b8;
+    background: var(--theme-action, #0070b8);
     color: #fff;
     border: none;
     border-radius: 3px;
@@ -109,16 +109,16 @@ button, .divbtn {
     display: inline-block;
 }
 button:hover, .divbtn:hover {
-    background: #005288;
+    background: var(--theme-action-hover, #005288);
 }
 .divbtn:focus {
-    outline: 2px solid #0070b8;
+    outline: 2px solid var(--theme-action, #0070b8);
     outline-offset: 2px;
 }
 .rebtn {
-    background: #e7f3fa;
-    color: #005288;
-    border: 1px solid #b6d2e6;
+    background: var(--theme-tint, #e7f3fa);
+    color: var(--theme-heading, #005288);
+    border: 1px solid var(--theme-line, #b6d2e6);
     border-radius: 3px;
     padding: 5px 16px;
     font-size: 0.9em;
@@ -127,11 +127,11 @@ button:hover, .divbtn:hover {
     margin-bottom: 8px;
 }
 .rebtn:hover {
-    background: #0070b8;
+    background: var(--theme-action, #0070b8);
     color: #fff;
 }
 .empty {
-    color: #7d8590;
+    color: var(--theme-muted, #7d8590);
     font-size: 0.95em;
     margin-top: 6px;
 }
@@ -139,15 +139,15 @@ button:hover, .divbtn:hover {
     display: inline-block;
     margin-top: 24px;
     padding: 10px 22px;
-    background: #e7f3fa;
-    color: #005288;
-    border: 1px solid #b6d2e6;
+    background: var(--theme-tint, #e7f3fa);
+    color: var(--theme-heading, #005288);
+    border: 1px solid var(--theme-line, #b6d2e6);
     border-radius: 4px;
     text-decoration: none;
     font-weight: 600;
 }
 .back:hover {
-    background: #0070b8;
+    background: var(--theme-action, #0070b8);
     color: #fff;
 }
 .frame-wrap {
@@ -156,12 +156,12 @@ button:hover, .divbtn:hover {
 .frame-wrap iframe {
     width: 100%;
     height: 540px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--theme-line, #d1d5db);
     border-radius: 4px;
-    background: #f3f3f3;
+    background: var(--theme-page, #f3f3f3);
 }
 .note {
-    color: #005288;
+    color: var(--theme-heading, #005288);
     font-weight: 600;
     margin: 0 0 8px;
     font-size: 0.95em;

@@ -2,56 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Case F — contenteditable divs</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document amendment — AA Forms</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <style>
+        [role=textbox] { min-height: 230px; padding: 18px; line-height: 1.8; overflow-wrap: anywhere; }
+        [contenteditable=false] { background: var(--theme-tint, #e7f3fa); padding: 3px 8px; }
+        [role=textbox] p { margin: 12px 0; }
+    </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
 </head>
-<body>
-<div class="container">
-    <h1>Case F — contenteditable divs</h1>
-    <p class="desc">
-        The text fields are <code>&lt;div contenteditable&gt;</code> instead of
-        <code>&lt;input&gt;</code>. Recorders expect real inputs; type and click events on
-        contenteditable elements often misbehave and value extraction breaks.
-    </p>
-    <form id="f" autocomplete="off">
-        <div class="fg"><label>Name</label><div contenteditable="true" data-field="name" class="ce"></div></div>
-        <div class="fg"><label>Country</label><div contenteditable="true" data-field="country" class="ce"></div></div>
-        <div class="fg"><label>Favorite Automation Feature</label><div contenteditable="true" data-field="feature" class="ce"></div></div>
-        <div class="fg"><label>Gender</label><div class="rg">
-            <input type="radio" id="male" name="gender" value="Male" required><label for="male">Male</label>
-            <input type="radio" id="female" name="gender" value="Female"><label for="female">Female</label>
-            <input type="radio" id="other" name="gender" value="Other"><label for="other">Other</label>
-        </div></div>
-        <div class="fg"><label>Is Awesome?</label><div class="cg"><input type="checkbox" id="awesome" name="awesome"><label for="awesome" style="margin-bottom:0;">Yes</label></div></div>
-        <div class="fg"><label>Favorite Bot Type</label><select id="bot" name="bot" required>
-            <option value="">Select...</option><option>Task Bot</option><option>Automation Co-Pilot</option><option>AI Guardrails</option><option>Enterprise Knowledge</option><option>Document Automation</option>
-        </select></div>
-        <div class="act"><button type="submit">Add Person</button></div>
-    </form>
-    <div id="list"></div>
+<body class="hard-case">
+<main class="container">
+    <h1>Document amendment</h1>
+    <p class="desc">The document is one rich-text editing surface. Its paragraphs are not separate inputs.
+        Saving reads the draft from input events. Rebuilding the editor replaces its node and nested markup.</p>
+    <div class="task"><p>Keep <strong>Contract CT-2048</strong> and <strong>Delivery: Lima</strong> unchanged.
+        Change only the quantity from <strong>2</strong> to <strong>3</strong>, then save.
+        Rebuild the editor and replay the amendment. Replacing the whole document must fail.</p></div>
+    <p id="editor-label">Contract document</p>
+    <div id="mount"></div>
+    <div class="toolbar"><button id="save" type="button">Save amendment</button><button id="rebuild" type="button">Rebuild editor</button></div>
+    <output id="result" aria-live="polite">Waiting for an amendment.</output>
     <a class="back" href="index.html">&larr; Back to Main Menu</a>
-</div>
+</main>
+<script src="progress.js?v=ee67cebaa63f"></script>
 <script>
-    var rows = [];
-    var f = document.getElementById('f');
-    f.addEventListener('submit', function(e){
-        e.preventDefault();
-        var g = f.querySelector('input[name=gender]:checked');
-        var row = {name:f.querySelector('[data-field=name]').textContent.trim(),country:f.querySelector('[data-field=country]').textContent.trim(),feature:f.querySelector('[data-field=feature]').textContent.trim(),gender:g?g.value:'',awesome:f.querySelector('#awesome').checked,bot:f.querySelector('#bot').value};
-        if(!row.name||!row.country||!row.feature||!row.gender||!row.bot)return;
-        rows.push(row);render();
-        f.querySelectorAll('[data-field]').forEach(function(el){el.textContent='';});
-        f.querySelector('#awesome').checked = false;
-        f.querySelectorAll('input[type=radio]').forEach(function(r){r.checked=false;});
-    });
-    function render(){
-        var l=document.getElementById('list');
-        if(!rows.length){l.innerHTML='<div class="empty">No people yet. Add someone above.</div>';return;}
-        var h='<table><thead><tr><th>Name</th><th>Country</th><th>Feature</th><th>Gender</th><th>Awesome</th><th>Bot Type</th></tr></thead><tbody>';
-        for(var i=0;i<rows.length;i++){var r=rows[i];h+='<tr><td>'+r.name+'</td><td>'+r.country+'</td><td>'+r.feature+'</td><td>'+r.gender+'</td><td>'+(r.awesome?'Yes':'No')+'</td><td>'+r.bot+'</td></tr>';}
-        h+='</tbody></table>';l.innerHTML=h;
+(() => {
+    const mount = document.getElementById('mount');
+    const result = document.getElementById('result');
+    let editor, draft, revision = 0;
+    function rebuild() {
+        revision++;
+        editor = document.createElement('div');
+        editor.id = `document-${crypto.randomUUID()}`;
+        editor.contentEditable = 'true';
+        editor.setAttribute('role', 'textbox');
+        editor.setAttribute('aria-multiline', 'true');
+        editor.setAttribute('aria-labelledby', 'editor-label');
+        editor.spellcheck = false;
+        editor.innerHTML = `<p><span contenteditable="false">Contract CT-2048</span></p>
+            <p>Quantity: ${revision % 2 ? '<strong>2</strong>' : '<span><em>2</em></span>'} units</p><p>Delivery: Lima</p>`;
+        mount.replaceChildren(editor);
+        draft = '';
+        editor.addEventListener('input', () => { draft = editor.innerText.replace(/\s+/g, ' ').trim(); result.textContent = 'Draft changed. Save to check the amendment.'; });
+        result.textContent = 'Waiting for an amendment.';
     }
-    render();
+    document.getElementById('save').addEventListener('click', () => {
+        const locked = editor.querySelector('[contenteditable=false]');
+        const passed = draft === 'Contract CT-2048 Quantity: 3 units Delivery: Lima' && locked?.textContent === 'Contract CT-2048' && editor.querySelectorAll('p').length === 3;
+        result.textContent = JSON.stringify({ status: passed ? 'passed' : 'failed', document: draft, lockedHeader: Boolean(locked) });
+        AAProgress.set('case-f.html', passed === true);
+    });
+    document.getElementById('rebuild').addEventListener('click', () => { AAProgress.set('case-f.html', false); rebuild(); });
+    rebuild();
+})();
 </script>
 </body>
 </html>

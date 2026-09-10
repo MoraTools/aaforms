@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Recycled invoice rows — AA Forms</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <style>
+        #viewport { height: 240px; overflow-y: auto; border: 1px solid var(--theme-line, #b6d2e6); position: relative; }
+        #space { height: 5760px; }
+        #pool { position: absolute; top: 0; left: 0; width: 100%; }
+        .invoice-row { height: 48px; display: flex; align-items: center; gap: 12px; padding: 4px 12px; border-bottom: 1px solid var(--theme-line, #d1d5db); }
+        .invoice-row label { flex: 1; margin: 0; }
+        .invoice-row input { width: 120px; font: inherit; }
+    </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
+<main class="container">
+    <h1>Recycled invoice rows</h1>
+    <p class="desc">120 invoices share six input nodes. Scrolling reuses each node for another invoice.
+        A captured element can still exist and silently edit the wrong record. Most rows are absent from the DOM.</p>
+    <div class="task"><p>Scroll to <strong>INV-1042</strong>, enter <strong>275.50</strong>, scroll away and back,
+        then submit. All other amounts must remain empty. Reset before replay.</p></div>
+    <p id="range" aria-live="polite"></p>
+    <div id="viewport" tabindex="0" role="region" aria-label="Scrollable invoice amounts">
+        <div id="space"></div><div id="pool"></div>
+    </div>
+    <div class="toolbar"><button id="submit" type="button">Submit invoice batch</button><button id="reset" type="button">Reset batch</button></div>
+    <output id="result" aria-live="polite">Waiting for invoice amounts.</output>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
+</main>
+<script src="progress.js?v=ee67cebaa63f"></script>
+<script>
+(() => {
+    const amounts = Array(120).fill('');
+    const viewport = document.getElementById('viewport');
+    const pool = document.getElementById('pool');
+    const result = document.getElementById('result');
+    let first = 0;
+    for (let slot = 0; slot < 6; slot++) {
+        const row = document.createElement('div');
+        row.className = 'invoice-row';
+        row.innerHTML = `<label for="slot-${slot}"></label><input id="slot-${slot}" type="number" min="0.01" max="1000000" step="0.01">`;
+        row.querySelector('input').addEventListener('input', event => {
+            amounts[first + slot] = event.target.value;
+            result.textContent = 'Draft changed. Submit to check the batch.';
+        });
+        pool.append(row);
+    }
+    function render() {
+        const next = Math.min(114, Math.floor(viewport.scrollTop / 48));
+        if (next !== first && pool.contains(document.activeElement)) document.activeElement.blur();
+        first = next;
+        pool.style.transform = `translateY(${first * 48}px)`;
+        [...pool.children].forEach((row, slot) => {
+            row.querySelector('label').textContent = `INV-${1000 + first + slot} amount`;
+            row.querySelector('input').value = amounts[first + slot];
+        });
+        document.getElementById('range').textContent = `Loaded invoices ${1000 + first}–${1005 + first} of 1000–1119.`;
+    }
+    viewport.addEventListener('scroll', render);
+    document.getElementById('submit').addEventListener('click', () => {
+        const edits = amounts.flatMap((amount, index) => amount === '' ? [] : [{ invoice: `INV-${1000 + index}`, amount }]);
+        const passed = edits.length === 1 && edits[0].invoice === 'INV-1042' && Number(edits[0].amount) === 275.5;
+        result.textContent = JSON.stringify({ status: passed ? 'passed' : 'failed', edits });
+        AAProgress.set('case-recycled.html', passed === true);
+    });
+    document.getElementById('reset').addEventListener('click', () => {
+        AAProgress.set('case-recycled.html', false);
+        amounts.fill('');
+        viewport.scrollTop = 0;
+        render();
+        result.textContent = 'Waiting for invoice amounts.';
+    });
+    render();
+})();
+</script>
+</body>
+</html>

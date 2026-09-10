@@ -1,32 +1,98 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<meta charset="utf-8">
-<title>Vision fallback test</title>
-<style>
-    body { font: 16px Arial, sans-serif; background: #f3f3f3; }
-    main { max-width: 640px; margin: 80px auto; padding: 32px; background: white; text-align: center; }
-    #decoys { position: fixed; left: -10000px; top: 0; width: 300px; }
-    .vision-target { padding: 14px 28px; background: #0070b8; color: white; border: 0; border-radius: 4px; }
-    output { display: block; margin-top: 24px; font-weight: bold; }
-</style>
-<body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ambiguous approval queue — AA Forms</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <style>
+        #decoys { position: fixed; left: -10000px; width: 300px; }
+        #queue { padding: 0; list-style: none; }
+        #queue li { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--theme-line, #b6d2e6); }
+        #queue strong, #queue span { display: block; }
+        dialog { max-width: min(440px, calc(100% - 32px)); border: 1px solid var(--theme-line, #b6d2e6); padding: 24px; color: var(--theme-ink, #1a2328); }
+        dialog::backdrop { background: rgb(26 35 40 / 45%); }
+        @media (max-width: 450px) { #queue li { flex-wrap: wrap; } }
+    </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
 <div id="decoys" aria-hidden="true"></div>
-<main>
-    <h1>Vision fallback test</h1>
-    <p>The target is visible in the screenshot but appears after the labeled-DOM size limit.</p>
-    <button class="vision-target" id="vision-target">Approve vision fallback</button>
-    <output id="result">Waiting</output>
+<main class="container">
+    <h1>Ambiguous approval queue</h1>
+    <p class="desc">Each row has the same Approve button. Invoice numbers, vendors, and amounts overlap.
+        Reset reverses the queue and replaces every row. Another Approve button appears in the dialog.
+        1,800 off-screen controls also stress DOM snapshot budgets; a vision fallback is not guaranteed.</p>
+    <div class="task"><p>Approve only <strong>INV-2048 / Acme Parts / USD 275.50</strong>.
+        Check all three values in the confirmation dialog. Reset the queue, then replay.
+        Approving a similar record must report <strong>failed</strong>.</p></div>
+    <button id="reset" type="button">Reset and reverse queue</button>
+    <ul id="queue" aria-label="Pending invoices"></ul>
+    <output id="result" aria-live="polite">Waiting for an approval.</output>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
 </main>
+<dialog aria-labelledby="confirm-title">
+    <h2 id="confirm-title">Confirm invoice approval</h2>
+    <p id="confirm-record"></p>
+    <form method="dialog" class="toolbar"><button value="cancel" autofocus>Cancel</button><button value="approve">Approve</button></form>
+</dialog>
+<script src="progress.js?v=ee67cebaa63f"></script>
 <script>
+(() => {
+    const records = [
+        { invoice: 'INV-2048', vendor: 'Acme Parts', amount: '725.50' },
+        { invoice: 'INV-2047', vendor: 'Acme Parts', amount: '275.50' },
+        { invoice: 'INV-2048', vendor: 'Acme Parts', amount: '275.50' },
+        { invoice: 'INV-2048', vendor: 'Acme Services', amount: '275.50' }
+    ];
+    const queue = document.getElementById('queue');
+    const dialog = document.querySelector('dialog');
+    const result = document.getElementById('result');
+    let selected = null, approved = [], reversed = false;
     const decoys = document.getElementById('decoys');
-    for (let index = 0; index < 1800; index += 1) {
+    for (let index = 0; index < 1800; index++) {
         const button = document.createElement('button');
+        button.tabIndex = -1;
         button.textContent = `Unrelated automation control ${index}`;
-        decoys.appendChild(button);
+        decoys.append(button);
     }
-    const target = document.getElementById('vision-target');
-    target.id = `vision-${crypto.randomUUID()}`;
-    target.onclick = () => document.getElementById('result').textContent = 'Vision click succeeded';
+    function render() {
+        queue.replaceChildren();
+        const order = reversed ? [...records].reverse() : records;
+        for (const record of order) {
+            const row = document.createElement('li');
+            row.innerHTML = `<div><strong>${record.invoice}</strong><span>${record.vendor}</span><span>USD ${record.amount}</span></div><button type="button">Approve</button>`;
+            const button = row.querySelector('button');
+            button.id = `approve-${crypto.randomUUID()}`;
+            button.disabled = approved.includes(record);
+            button.addEventListener('click', () => {
+                selected = record;
+                dialog.returnValue = '';
+                document.getElementById('confirm-record').textContent = `${record.invoice} / ${record.vendor} / USD ${record.amount}`;
+                dialog.showModal();
+            });
+            queue.append(row);
+        }
+    }
+    dialog.addEventListener('close', () => {
+        if (dialog.returnValue !== 'approve' || !selected) return;
+        approved.push(selected);
+        const passed = approved.length === 1 && selected === records[2];
+        result.textContent = JSON.stringify({ status: passed ? 'passed' : 'failed', approved });
+        AAProgress.set('vision-fallback.html', passed === true);
+        render();
+        document.getElementById('reset').focus();
+    });
+    document.getElementById('reset').addEventListener('click', () => {
+        AAProgress.set('vision-fallback.html', false);
+        selected = null; approved = []; reversed = !reversed;
+        result.textContent = 'Waiting for an approval.';
+        render();
+    });
+    render();
+})();
 </script>
 </body>
 </html>

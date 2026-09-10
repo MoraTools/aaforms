@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Canvas seat reservation — AA Forms</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <style>
+        canvas { display: block; width: 100%; max-width: 480px; height: auto; border: 1px solid var(--theme-line, #b6d2e6); touch-action: manipulation; }
+    </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
+<main class="container">
+    <h1>Canvas seat reservation</h1>
+    <p class="desc">The seats are painted pixels. There are no per-seat DOM nodes, IDs, or XPath targets.
+        Reversing the layout moves each seat while the canvas element stays the same.</p>
+    <div class="task"><p>Enter <strong>Ada Torres</strong>, select seat <strong>B3</strong>, then reserve it.
+        Clear the form, reverse the layout, and replay. The result must still name <strong>B3</strong>.</p></div>
+    <form id="reservation" autocomplete="off">
+        <div class="fg"><label for="passenger">Passenger name</label><input id="passenger" name="passenger" type="text" maxlength="60" required></div>
+        <div class="act">
+            <p id="seat-help">Click a seat, or focus the seat map and use arrow keys, then Space or Enter.
+                The thick border shows keyboard position; the selected seat says “Selected”.</p>
+            <canvas id="seats" width="480" height="240" tabindex="0" role="group" aria-label="Seat map" aria-describedby="seat-help seat-status">
+                Your browser must support canvas to use this fixture.
+            </canvas>
+            <p id="seat-status" aria-live="polite">No seat selected. Keyboard position: A1.</p>
+        </div>
+        <div class="toolbar"><button type="submit">Reserve seat</button><button id="reverse" type="button">Reverse seat layout</button><button type="reset">Clear reservation</button></div>
+    </form>
+    <output id="result" aria-live="polite">Waiting for a reservation.</output>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
+</main>
+<script src="progress.js?v=ee67cebaa63f"></script>
+<script>
+(() => {
+    const canvas = document.getElementById('seats');
+    const ctx = canvas.getContext('2d');
+    const form = document.getElementById('reservation');
+    const result = document.getElementById('result');
+    const names = ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'B4', 'C1', 'C2', 'C3', 'C4'];
+    let reversed = false, cursor = 0, selected = '';
+    const nameAt = index => names[reversed ? 11 - index : index];
+    function draw() {
+        const styles = getComputedStyle(document.documentElement);
+        const color = (name, fallback) => styles.getPropertyValue('--theme-' + name).trim() || fallback;
+        ctx.clearRect(0, 0, 480, 240);
+        ctx.textAlign = 'center';
+        for (let index = 0; index < 12; index++) {
+            const x = (index % 4) * 120 + 8, y = Math.floor(index / 4) * 80 + 8;
+            const name = nameAt(index);
+            ctx.fillStyle = name === selected ? '#0070b8' : color('tint', '#e7f3fa');
+            ctx.fillRect(x, y, 104, 64);
+            ctx.strokeStyle = color('heading', '#005288');
+            ctx.lineWidth = index === cursor ? 4 : 1;
+            ctx.strokeRect(x, y, 104, 64);
+            ctx.fillStyle = name === selected ? '#ffffff' : color('heading', '#005288');
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText(name, x + 52, y + 29);
+            ctx.font = '14px Arial';
+            ctx.fillText(name === selected ? 'Selected' : 'Available', x + 52, y + 50);
+        }
+        document.getElementById('seat-status').textContent = `${selected ? `Selected: ${selected}.` : 'No seat selected.'} Keyboard position: ${nameAt(cursor)}.`;
+    }
+    function choose() {
+        selected = nameAt(cursor);
+        result.textContent = 'Seat changed. Reserve to check the result.';
+        draw();
+    }
+    canvas.addEventListener('click', event => {
+        const rect = canvas.getBoundingClientRect();
+        const x = (event.clientX - rect.left) * 480 / rect.width;
+        const y = (event.clientY - rect.top) * 240 / rect.height;
+        if (x < 0 || x >= 480 || y < 0 || y >= 240 || x % 120 < 8 || x % 120 > 112 || y % 80 < 8 || y % 80 > 72) return;
+        cursor = Math.floor(y / 80) * 4 + Math.floor(x / 120);
+        canvas.focus();
+        choose();
+    });
+    canvas.addEventListener('keydown', event => {
+        if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter'].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === ' ' || event.key === 'Enter') { choose(); return; }
+        const delta = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -4, ArrowDown: 4 }[event.key];
+        cursor = Math.max(0, Math.min(11, cursor + delta));
+        draw();
+    });
+    document.getElementById('reverse').addEventListener('click', () => {
+        reversed = !reversed;
+        result.textContent = 'Layout changed. Check the seat label before reserving.';
+        draw();
+    });
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const passenger = form.elements.passenger.value.trim();
+        const passed = passenger === 'Ada Torres' && selected === 'B3';
+        result.textContent = JSON.stringify({ status: passed ? 'passed' : 'failed', passenger, seat: selected });
+        AAProgress.set('case-canvas.html', passed === true);
+    });
+    form.addEventListener('reset', () => {
+        AAProgress.set('case-canvas.html', false);
+        selected = ''; cursor = 0;
+        result.textContent = 'Waiting for a reservation.';
+        draw();
+    });
+    window.addEventListener('aaforms-theme-change', draw);
+    draw();
+})();
+</script>
+</body>
+</html>

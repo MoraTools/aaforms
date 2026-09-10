@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Closed shadow root — AA Forms</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
+<main class="container">
+    <div class="intro">
+        <h1>Closed shadow root</h1>
+        <p class="desc">A supplier form inside a closed shadow root. Page scripts cannot reach its fields through
+            <code>host.shadowRoot</code>. AA documents closed shadow elements as unsupported for object capture.</p>
+        <div class="task"><p>Enter <strong>Ada Torres</strong>, select <strong>Procurement</strong>, enter
+            <strong>SUP-204</strong>, accept the terms, then save. Reload and replay the same task.</p></div>
+    </div>
+    <div id="host"></div>
+    <output id="result" aria-live="polite">Waiting for a supplier.</output>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
+</main>
+<template>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <form class="hard-case" autocomplete="off">
+        <div class="fg"><label for="contact">Contact name</label><input id="contact" name="contact" type="text" maxlength="60" required></div>
+        <div class="fg"><label for="department">Department</label><select id="department" name="department" required>
+            <option value="">Select...</option><option>Procurement</option><option>Finance</option>
+        </select></div>
+        <div class="fg"><label for="supplier">Supplier code</label><input id="supplier" name="supplier" type="text" pattern="SUP-[0-9]{3}" maxlength="7" required></div>
+        <div class="act"><label><input name="terms" type="checkbox" required> I accept the supplier terms</label></div>
+        <div class="toolbar"><button type="submit">Save supplier</button><button type="reset">Clear form</button></div>
+    </form>
+</template>
+<script src="progress.js?v=ee67cebaa63f"></script>
+<script>
+(() => {
+    const params = new URLSearchParams(location.search);
+    // The open variant is the control fixture used inside the opaque frames.
+    const mode = params.get('root') === 'open' ? 'open' : 'closed';
+    if (mode === 'open') {
+        document.title = 'Open shadow supplier — AA Forms';
+        document.querySelector('h1').textContent = 'Open shadow root (control)';
+        document.querySelector('.desc').textContent = 'The same supplier form with an open shadow root. Used to isolate frame traversal from closed-root access.';
+    }
+    if (params.has('embedded')) document.body.classList.add('embedded');
+    const template = document.querySelector('template');
+    const root = document.getElementById('host').attachShadow({ mode });
+    root.append(template.content.cloneNode(true));
+    template.remove();
+    const form = root.querySelector('form');
+    const result = document.getElementById('result');
+    function recordProgress(passed) {
+        if (mode === 'open') AAProgress.showCurrent(passed);
+        if (mode === 'closed' && window === top) AAProgress.set('case-closed.html', passed);
+        else if (params.has('embedded') && window !== parent) {
+            parent.postMessage({ type: 'aaforms-supplier-result', run: params.get('run'), passed }, '*');
+        }
+    }
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const values = Object.fromEntries(new FormData(form));
+        const passed = values.contact.trim() === 'Ada Torres' && values.department === 'Procurement' && values.supplier === 'SUP-204' && values.terms === 'on';
+        result.textContent = JSON.stringify({ status: passed ? 'passed' : 'failed', ...values });
+        recordProgress(passed);
+    });
+    form.addEventListener('reset', () => { result.textContent = 'Waiting for a supplier.'; recordProgress(false); });
+})();
+</script>
+</body>
+</html>

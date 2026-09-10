@@ -2,205 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AA Forms — Automation Recorder Training</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AA Forms — Capture and replay challenges</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
     <style>
-        body {
-            background: #f3f3f3;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            background: #fff;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 40px 32px 48px 32px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 {
-            font-size: 1.7em;
-            color: #005288;
-            font-weight: 500;
-            margin: 0 0 6px 0;
-            text-align: center;
-        }
-        .subtitle {
-            color: #7d8590;
-            font-size: 0.95em;
-            margin: 0 0 28px 0;
-            text-align: center;
-        }
-        .readme {
-            width: 100%;
-            background: #e7f3fa;
-            border: 1px solid #b6d2e6;
-            border-radius: 6px;
-            padding: 18px 22px;
-            margin-bottom: 32px;
-            color: #1a2328;
-            font-size: 0.97em;
-            line-height: 1.55;
-            box-sizing: border-box;
-        }
-        .readme h2 {
-            color: #005288;
-            font-size: 1.08em;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-        }
-        .readme p {
-            margin: 0 0 10px 0;
-        }
-        .readme p:last-child {
-            margin-bottom: 0;
-        }
-        .readme ul {
-            margin: 6px 0 10px 0;
-            padding-left: 20px;
-        }
-        .readme li {
-            margin-bottom: 4px;
-        }
-        .readme code {
-            background: #fff;
-            border: 1px solid #b6d2e6;
-            border-radius: 3px;
-            padding: 1px 5px;
-            font-size: 0.9em;
-            color: #005288;
-        }
-        .sap-link {
-            display: block;
-            margin: 0;
-            padding: 13px 0;
-            text-align: center;
-            background: #e7f3fa;
-            color: #005288;
-            border: 1px solid #b6d2e6;
-            border-radius: 4px;
-            font-size: 1em;
-            font-weight: 600;
-            text-decoration: none;
-            transition: background 0.2s, color 0.2s;
-        }
-        .sap-link:hover {
-            background: #0070b8;
-            color: #fff;
-        }
-        .sap-link.visited {
-            background: #f0f0f0;
-            color: #666;
-            border-color: #d1d5db;
-        }
-        .sap-link.visited:hover {
-            background: #0070b8;
-            color: #fff;
-        }
-        .links-head {
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 12px;
-        }
-        .reset-btn {
-            background: #e7f3fa;
-            color: #005288;
-            border: 1px solid #b6d2e6;
-            border-radius: 4px;
-            padding: 8px 18px;
-            font-size: 0.92em;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .reset-btn:hover {
-            background: #0070b8;
-            color: #fff;
-        }
-        .links-grid {
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        @media (max-width: 650px) {
-            .container {padding: 12px;}
-            .readme {padding: 14px;}
-        }
+        .catalog { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--theme-line, #b6d2e6); }
+        .catalog li { border-bottom: 1px solid var(--theme-line, #b6d2e6); }
+        .sap-link { display: block; padding: 18px 12px; text-decoration: none; color: var(--theme-heading, #005288); }
+        .sap-link strong { display: block; font-size: 1.1rem; }
+        .sap-link span { display: block; color: var(--theme-muted, #3a4350); margin-top: 4px; }
+        .sap-link:hover { background: var(--theme-tint, #e7f3fa); }
+        .sap-link .completion { font-size: .85rem; font-weight: 600; }
+        .sap-link.completed .completion { color: var(--theme-success, #176538); }
+        progress { display: block; width: 100%; height: 12px; accent-color: var(--theme-success, #176538); margin-bottom: 24px; }
+        .toolbar { justify-content: space-between; align-items: center; }
     </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
 </head>
-<body>
-<div class="container">
-    <h1>AA Forms — Automation Recorder Training</h1>
-    <p class="subtitle">Local test site for learning and testing web automation recorder tools</p>
-
-    <div class="readme">
-        <h2>Objective</h2>
-        <p>
-            This site exists for <strong>learning to use automation recorder tools</strong>
-            (such as Automation Anywhere's web recorder) and for <strong>testing</strong> how
-            they behave against real-world pages that are deliberately difficult to automate.
-        </p>
-        <p>The plain <code>form.html</code> is a normal SAP-style form — the easy case.
-        Each <code>case-*.html</code> page below applies one technique (or all of them) that
-        commonly breaks recorders, so you can practice handling them:</p>
-        <ul>
-            <li><strong>srcdoc + sandbox</strong> — iframe with no URL to navigate to</li>
-            <li><strong>runtime-built DOM</strong> — fields created by JS after load</li>
-            <li><strong>randomized IDs</strong> — change on every load</li>
-            <li><strong>vision fallback</strong> — 1800 off-screen decoys push the target past the labeled-DOM size limit, forcing screenshot-based selection</li>
-            <li><strong>shadow DOM</strong> — fields hidden behind a shadow boundary</li>
-            <li><strong>contenteditable divs</strong> — instead of <code>&lt;input&gt;</code></li>
-            <li><strong>no IDs, addEventListener only</strong> — no stable selector anchors</li>
-            <li><strong>div submit button</strong> — a <code>&lt;div&gt;</code> acting as the submit button</li>
-            <li><strong>nested iframe</strong> — a frame inside a frame</li>
-            <li><strong>all techniques stacked</strong> — every technique above combined</li>
-        </ul>
-        <p>
-            Open the published GitHub Pages site and record against each section. Observe where the
-            recorder fails, then figure out the workaround — that is the point of this site.
-        </p>
-    </div>
-
-    <div class="links-head">
-        <button class="reset-btn" id="reset-btn">Reset visited</button>
-    </div>
-    <div class="links-grid">
-        <a class="sap-link" href="form.html">Forms (easy case)</a>
-        <a class="sap-link" href="expense-approval.html">Expense approval system</a>
-        <a class="sap-link" href="case-ab.html">srcdoc + sandbox</a>
-        <a class="sap-link" href="case-c.html">runtime-built DOM</a>
-        <a class="sap-link" href="case-d.html">randomized IDs</a>
-        <a class="sap-link" href="vision-fallback.html">vision fallback</a>
-        <a class="sap-link" href="case-e.html">shadow DOM</a>
-        <a class="sap-link" href="case-f.html">contenteditable divs</a>
-        <a class="sap-link" href="case-g.html">no IDs, addEventListener only</a>
-        <a class="sap-link" href="case-h.html">div submit button</a>
-        <a class="sap-link" href="case-i.html">nested iframe</a>
-        <a class="sap-link" href="case-all.html">all techniques stacked</a>
-    </div>
-</div>
+<body class="hard-case">
+<main class="container">
+    <h1>AA Forms</h1>
+    <p>Start with the basics. Difficulty increases down the list.</p>
+    <div class="toolbar"><span id="progress-count" aria-live="polite">0 of 8 completed</span><button class="rebtn" id="reset-btn" type="button">Reset progress</button></div>
+    <progress id="progress" max="8" value="0" aria-labelledby="progress-count"></progress>
+    <ul class="catalog" aria-label="Cases ordered from easiest to hardest">
+        <li><a class="sap-link" href="form.html"><strong>1. People List (SAP Style) — Classic</strong><span>Start here: standard fields, Add Person, and Reset People List.</span><span class="completion">Not completed</span></a></li>
+        <li><a class="sap-link" href="vision-fallback.html"><strong>2. Ambiguous approval queue</strong><span>Similar records, identical buttons, changed order, and a confirmation dialog.</span><span class="completion">Not completed</span></a></li>
+        <li><a class="sap-link" href="case-remount.html"><strong>3. Supplier order wizard</strong><span>Delayed choices, replaced fields, and event-backed state.</span><span class="completion">Not completed</span></a></li>
+        <li><a class="sap-link" href="case-f.html"><strong>4. Document amendment</strong><span>One rich-text editor, locked text, and a replaced editing surface.</span><span class="completion">Not completed</span></a></li>
+        <li><a class="sap-link" href="case-recycled.html"><strong>5. Recycled invoice rows</strong><span>The same input becomes a different invoice after scrolling.</span><span class="completion">Not completed</span></a></li>
+        <li><a class="sap-link" href="case-canvas.html"><strong>6. Painted seat map</strong><span>No per-seat DOM targets; the same coordinates select another seat.</span><span class="completion">Not completed</span></a></li>
+        <li><a class="sap-link" href="case-closed.html"><strong>7. Closed supplier form</strong><span>Fields behind a closed shadow root.</span><span class="completion">Not completed</span></a></li>
+        <li><a class="sap-link" href="case-opaque.html"><strong>8. Isolated supplier portal</strong><span>Two opaque frames, a shadow root, and replaced documents.</span><span class="completion">Not completed</span></a></li>
+    </ul>
+    <a class="back" href="HARD-CASES.md">Test tasks and acceptance checks</a>
+</main>
+<script src="progress.js?v=ee67cebaa63f"></script>
 <script>
-    var VISITED_KEY = 'aa_visited';
-    var visited = new Set(JSON.parse(localStorage.getItem(VISITED_KEY) || '[]'));
-    var links = document.querySelectorAll('.sap-link');
-    links.forEach(function(a){
-        if (visited.has(a.getAttribute('href'))) a.classList.add('visited');
-        a.addEventListener('click', function(){
-            visited.add(a.getAttribute('href'));
-            localStorage.setItem(VISITED_KEY, JSON.stringify(Array.from(visited)));
-            a.classList.add('visited');
+(() => {
+    const links = [...document.querySelectorAll('.sap-link')];
+    function renderProgress() {
+        let completed = 0;
+        links.forEach(link => {
+            const done = AAProgress.isComplete(link.getAttribute('href'));
+            link.classList.toggle('completed', done);
+            link.querySelector('.completion').textContent = done ? 'Completed' : 'Not completed';
+            if (done) completed++;
         });
+        document.getElementById('progress-count').textContent = `${completed} of ${links.length} completed`;
+        document.getElementById('progress').value = completed;
+    }
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        links.forEach(link => AAProgress.set(link.getAttribute('href'), false));
     });
-    document.getElementById('reset-btn').addEventListener('click', function(){
-        visited.clear();
-        localStorage.removeItem(VISITED_KEY);
-        links.forEach(function(a){ a.classList.remove('visited'); });
-    });
+    window.addEventListener('storage', renderProgress);
+    window.addEventListener('pageshow', renderProgress);
+    window.addEventListener('aaforms-progress', renderProgress);
+    renderProgress();
+})();
 </script>
 </body>
 </html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Replaced fields + delayed options — AA Forms</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
+<main class="container">
+    <h1>Replaced fields + delayed options</h1>
+    <p class="desc">Changing region replaces the supplier node after a delay. Each step replaces the form and generates new IDs.
+        The saved draft follows input and change events; setting only a DOM value will not update it.</p>
+    <div class="task"><p>Choose <strong>Peru → Lima Parts</strong>. Continue, enter <strong>PO-2048</strong> and
+        <strong>3</strong> units, then place the order. Reset and replay; the final result must report <strong>passed</strong>.</p></div>
+    <div id="mount"></div>
+    <output id="result" aria-live="polite">Waiting for an order.</output>
+    <button id="reset" type="button">Reset order</button>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
+</main>
+<script src="progress.js?v=ee67cebaa63f"></script>
+<script>
+(() => {
+    const mount = document.getElementById('mount');
+    const result = document.getElementById('result');
+    let draft, timer;
+    function start() {
+        clearTimeout(timer);
+        draft = { region: '', supplier: '', reference: '', units: '' };
+        const suffix = crypto.randomUUID();
+        mount.innerHTML = `<h2>Step 1 — Supplier</h2><form autocomplete="off">
+            <div class="fg"><label for="region-${suffix}">Region</label><select id="region-${suffix}" required>
+                <option value="">Select...</option><option>Peru</option><option>Chile</option></select></div>
+            <div class="fg" id="supplier-slot"><label for="supplier-empty">Supplier</label><select id="supplier-empty" disabled><option>Select a region first</option></select></div>
+            <div class="act"><button type="submit" disabled>Continue</button></div></form>`;
+        const form = mount.querySelector('form');
+        const next = form.querySelector('button');
+        form.querySelector('select').addEventListener('change', event => {
+            clearTimeout(timer);
+            draft.region = event.target.value;
+            draft.supplier = '';
+            next.disabled = true;
+            const slot = document.getElementById('supplier-slot');
+            slot.innerHTML = '<label for="supplier-loading">Supplier</label><select id="supplier-loading" disabled><option>Loading suppliers...</option></select>';
+            result.textContent = draft.region ? 'Loading suppliers...' : 'Select a region.';
+            if (!draft.region) return;
+            timer = setTimeout(() => {
+                const id = `supplier-${crypto.randomUUID()}`;
+                slot.innerHTML = `<label for="${id}">Supplier</label><select id="${id}" required><option value="">Select...</option></select>`;
+                const select = slot.querySelector('select');
+                const name = draft.region === 'Peru' ? 'Lima Parts' : 'Santiago Parts';
+                select.add(new Option(name, name));
+                select.addEventListener('change', event => { draft.supplier = event.target.value; });
+                next.disabled = false;
+                result.textContent = 'Suppliers ready.';
+            }, 450);
+        });
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            if (!draft.region || !draft.supplier) {
+                result.textContent = 'Select a region and supplier before continuing.';
+                return;
+            }
+            details();
+        });
+        result.textContent = 'Waiting for an order.';
+    }
+    function details() {
+        const suffix = crypto.randomUUID();
+        mount.innerHTML = `<h2>Step 2 — Order details</h2><form autocomplete="off">
+            <div class="fg"><label for="reference-${suffix}">Order reference</label><input id="reference-${suffix}" type="text" pattern="PO-[0-9]{4}" maxlength="7" required></div>
+            <div class="fg"><label for="units-${suffix}">Units</label><input id="units-${suffix}" type="number" min="1" max="100" step="1" required></div>
+            <div class="act"><button type="submit">Place order</button></div></form>`;
+        const form = mount.querySelector('form');
+        const [reference, units] = form.querySelectorAll('input');
+        reference.addEventListener('input', event => { draft.reference = event.target.value; });
+        units.addEventListener('input', event => { draft.units = event.target.value; });
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            const passed = draft.region === 'Peru' && draft.supplier === 'Lima Parts' && draft.reference === 'PO-2048' && draft.units === '3';
+            result.textContent = JSON.stringify({ status: passed ? 'passed' : 'failed', ...draft });
+            AAProgress.set('case-remount.html', passed === true);
+        });
+        reference.focus();
+    }
+    document.getElementById('reset').addEventListener('click', () => { AAProgress.set('case-remount.html', false); start(); });
+    start();
+})();
+</script>
+</body>
+</html>
