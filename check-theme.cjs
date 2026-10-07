@@ -51,7 +51,7 @@ const { chromium } = require('playwright');
         await check(page, 'dark');
         await other.close();
 
-        const routes = ['index', 'form', 'vision-fallback', 'case-remount', 'case-f', 'case-recycled', 'case-canvas', 'case-closed', 'case-opaque', 'expense-approval'];
+        const routes = ['index', 'form', 'vision-fallback', 'case-navigation', 'case-remount', 'case-f', 'case-recycled', 'case-canvas', 'case-closed', 'case-opaque', 'expense-approval'];
         if (process.env.AA_SCREENSHOTS) await mkdir(process.env.AA_SCREENSHOTS, { recursive: true });
         for (const mode of ['dark', 'light']) {
             await page.evaluate(mode => localStorage.setItem('aaforms:theme', mode), mode);

@@ -30,7 +30,7 @@ new theme markup from reusing the old light-only stylesheet in browser caches.
 ## Completion and difficulty
 
 The single catalog is ordered by estimated capture/replay difficulty:
-classic People List → approval queue → supplier wizard → document amendment →
+classic People List → approval queue → branch office portal → supplier wizard → document amendment →
 recycled invoices → canvas seats → closed shadow form → nested opaque portal.
 This is a training order, not a claim that every recorder fails in the same order.
 
@@ -43,9 +43,11 @@ This is a training order, not a claim that every recorder fails in the same orde
   Draft inputs still follow each fixture's original behavior. Old visited-link data
   is not converted into completion.
 - Each existing reset/rebuild/recreate button keeps its fixture behavior and clears
-  that case's completion. **Reset progress** on the catalog clears all eight marks;
+  that case's completion. **Reset progress** on the catalog clears all nine marks;
   it does not erase People List or expense-demo data.
 - Open catalog tabs update when another tab completes or resets a case.
+- The branch office portal completes when **Save settings** returns `passed`. A save
+  of another account or of other values removes the mark; **Reset portal** clears it.
 - Each case also shows **Completed** or **Not completed** on its own page. This
   status updates after submission, reset, reload, or a progress change in another
   tab. The inner supplier form shows its current result without reading sandboxed
@@ -101,6 +103,7 @@ the removed srcdoc cases does not create the opaque-origin barrier tested here.
 | [Recycled invoice rows](case-recycled.html) | 120 records share six input nodes. The same ID and element can refer to a different invoice after scrolling. | Tests absent targets and silent wrong-record replay. Context-aware selection can succeed. |
 | [Replaced fields](case-remount.html) | Delayed supplier options, replaced form nodes, random IDs, and event-backed draft state. | Tests stale references, waits, and value assignment without events. Semantic selection with correct events can succeed. |
 | [Document amendment](case-f.html) | One contenteditable document with locked text and changing nested markup; rebuilding replaces the editor. | Tests text-range editing, stale nodes, and draft events. Whole-document replacement fails the structure check. |
+| [Branch office portal](case-navigation.html) | A hash-routed single page: click menus, a sidebar, a breadcrumb, a paginated table that loads after 600 ms, tabs and a three-step wizard with new nodes per step. A banner slides in 1.5 s after each view and moves the page down. Reset flips EN/ES labels, the rows per page and the menu order, and replaces the Open button IDs. | Tests navigation that reads the page each time against clicks replayed from one capture. Ids, routes and `data-` attributes stay the same in both languages. |
 | [Approval queue](vision-fallback.html) | Similar records share button labels; reset reverses and replaces rows; a modal adds another Approve button. | Tests record context, stale coordinates, confirmation scope, and DOM budget pressure. Fallback behavior is tool-dependent. |
 | [Canvas reservation](case-canvas.html) | Twelve painted seats share one DOM target. Reversing the layout changes which seat occupies each coordinate. | Per-seat DOM capture has no target. Keyboard and visual selection remain possible. |
 
@@ -134,6 +137,14 @@ not establish that AA Capture fails.
    the dialog before confirmation. Reset reverses the rows and generates new button
    IDs. Replay using all three record values. Cancel and Escape must make no approval;
    one wrong approval makes the run fail even if the correct record is approved later.
+8. **Branch office portal:** Open `ACC-3042` (Customers › Accounts, any page), go to
+   **Settings**, set **Statement** to **Monthly**, tick **Paperless**, change the address
+   to `Av. Arequipa 1234`, `Lima 15046` through the wizard, and **Save settings**. Reset
+   and replay: attempt 2 is in Spanish with 10 rows per page, `Operations` first in the
+   menu, and the account on another page. The result must have `status: "passed"`. A
+   save of another account in the same attempt, or of `ACC-3042` with other values,
+   reports `failed`. Values set on the DOM without input or change events are not saved.
+   The language choice is kept under `aaforms:lang`.
 
 For a live AA run, record the browser and extension versions, Recorder package,
 Bot Agent, capture technology, selected object properties, and fallback settings.
@@ -184,3 +195,11 @@ Seven cases also passed in Chromium 152 with the known opaque-frame traversal
 limitation excluded. Restoring saved browser state retained completion, and blocked
 storage displayed a warning without awarding completion. The check now uses a
 bounded timeout for the main browser context.
+
+Branch office portal validation on 2026-10-06: the browser check and the theme check
+passed in Chromium `154.0.8037.92` with Playwright 1.63.0 (positive path through the menu
+and the pages, wrong account, reset to Spanish with 10 rows and the rotated menu, Back
+and Forward, a direct settings URL, DOM-only values, the late banner, the sidebar, the
+hamburger at 390 px and no page errors). On this Chromium the opaque-frame section
+still cannot find the inner frames by URL (`check-hard-cases.cjs` stops there); all
+other sections passed with those four frame lookups left out.

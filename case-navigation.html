@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Branch office portal - AA Forms</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <style>
+        #portal { border: 1px solid var(--theme-line, #b6d2e6); border-radius: 4px; margin: 20px 0; overflow: hidden; }
+        .banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; overflow: hidden;
+            background: var(--theme-tint, #e7f3fa); border-left: 4px solid var(--theme-warning, #8a5a00); font-weight: 600; animation: slide-in .25s ease-out; }
+        .banner .rebtn { margin: 0; }
+        @keyframes slide-in { from { max-height: 0; padding-block: 0; } to { max-height: 80px; } }
+        @media (prefers-reduced-motion: reduce) { .banner { animation: none; } }
+        .menubar { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 8px; background: var(--theme-topbar, #005288); }
+        .menubar button { background: transparent; color: #fff; padding: 8px 14px; }
+        .menubar button:hover, .menubar button[aria-expanded=true] { background: rgb(255 255 255 / 18%); }
+        .menus { display: flex; gap: 4px; }
+        .menu { position: relative; }
+        .menu ul { position: absolute; z-index: 5; top: 100%; left: 0; min-width: 180px; margin: 4px 0 0; padding: 4px 0; list-style: none;
+            background: var(--theme-surface, #fff); border: 1px solid var(--theme-line, #b6d2e6); border-radius: 4px; box-shadow: var(--theme-shadow, 0 10px 28px rgba(0, 0, 0, .12)); }
+        .menu ul button { display: block; width: 100%; text-align: left; border-radius: 0; color: var(--theme-ink, #1a2328); }
+        .menu ul button:hover { background: var(--theme-tint, #e7f3fa); }
+        .menu-toggle { display: none; }
+        .layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); }
+        .layout.collapsed { grid-template-columns: auto minmax(0, 1fr); }
+        aside { padding: 12px; border-right: 1px solid var(--theme-line, #b6d2e6); background: var(--theme-muted-surface, #f7fafb); }
+        aside .rebtn { margin: 0 0 8px; }
+        aside summary { cursor: pointer; font-weight: 600; color: var(--theme-heading, #005288); padding: 6px 0; }
+        aside ul { list-style: none; margin: 0 0 8px; padding: 0 0 0 12px; }
+        aside a, .crumbs a { color: var(--theme-heading, #005288); }
+        aside li { padding: 3px 0; }
+        .content { padding: 12px 18px 18px; min-width: 0; }
+        .crumbs ol { display: flex; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; font-size: .92em; }
+        .crumbs li + li::before { content: "\203A"; padding: 0 8px; color: var(--theme-muted, #3a4350); }
+        .crumbs [aria-current] { font-weight: 600; text-decoration: none; }
+        .toolbar label { display: flex; flex-direction: column; }
+        .table-wrap { overflow-x: auto; }
+        td .rebtn { margin: 0; }
+        .pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
+        .pager .rebtn { margin: 0; padding: 5px 12px; }
+        .pager [aria-current] { background: var(--theme-action, #0070b8); color: #fff; }
+        .pager .rebtn:disabled { background: var(--theme-disabled, #596874); color: #fff; cursor: not-allowed; }
+        [role=tablist] { display: flex; gap: 4px; border-bottom: 1px solid var(--theme-line, #b6d2e6); margin-bottom: 14px; }
+        [role=tab] { background: transparent; color: var(--theme-heading, #005288); border-radius: 3px 3px 0 0; padding: 8px 16px; }
+        [role=tab][aria-selected=true] { background: var(--theme-action, #0070b8); color: #fff; }
+        fieldset { border: 1px solid var(--theme-line, #b6d2e6); border-radius: 4px; margin: 0 0 14px; padding: 10px 14px; }
+        legend { color: var(--theme-heading, #005288); font-weight: 600; padding: 0 4px; }
+        .check { display: flex; gap: 8px; align-items: center; margin: 0 0 14px; }
+        fieldset .check { margin: 4px 0; }
+        .settings .fg { margin-bottom: 14px; max-width: 420px; }
+        .settings input[type=number], .settings textarea { padding: 6px 10px; border: 1px solid var(--theme-line, #bdbdbd); border-radius: 3px;
+            background: var(--theme-field, #fafbfc); color: var(--theme-ink, #1a2328); font: inherit; min-height: 40px; }
+        .wizard .fg { margin-bottom: 10px; }
+        dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 12px; }
+        dt { font-weight: 600; color: var(--theme-heading, #005288); }
+        dd { margin: 0; }
+        .toast { position: fixed; z-index: 10; right: 16px; bottom: 16px; padding: 12px 18px; border-radius: 4px; font-weight: 600;
+            background: var(--theme-success-surface, #eaf6ed); color: var(--theme-success, #176538); border: 1px solid var(--theme-success, #176538); }
+        .theme-controls .lang { display: flex; }
+        .theme-controls .lang button { padding: 8px 10px; }
+        .theme-controls .lang button + button { border-left: 0; }
+        .theme-controls .lang button[aria-pressed=true] { background: var(--theme-heading, #005288); color: var(--theme-surface, #fff); }
+        @media (max-width: 650px) {
+            .menu-toggle { display: inline-block; }
+            .menus { display: none; flex-direction: column; width: 100%; }
+            .menubar.open .menus { display: flex; }
+            .menu ul { position: static; box-shadow: none; }
+            .layout, .layout.collapsed { grid-template-columns: minmax(0, 1fr); }
+            aside { border-right: 0; border-bottom: 1px solid var(--theme-line, #b6d2e6); }
+            .content { padding: 12px; }
+        }
+    </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
+<main class="container">
+    <h1>Branch office portal</h1>
+    <p class="desc">A single-page portal with click menus, a sidebar, a breadcrumb, hash routes, a paginated table that loads late,
+        tabs and a three-step wizard. A session banner slides in after every view and moves the page down. Every portal label
+        switches between English and Spanish. Reset flips the language, the rows per page and the menu order, and replaces the
+        Open button IDs. The saved settings follow input and change events; setting only a DOM value will not update them.</p>
+    <div class="task"><p>Open the account <strong>ACC-3042</strong> (Customers › Accounts, any page), go to its <strong>Settings</strong> tab,
+        set <strong>Statement</strong> to <strong>Monthly</strong>, tick <strong>Paperless</strong>, change the address to
+        <strong>Av. Arequipa 1234</strong>, <strong>Lima 15046</strong> through the wizard, then <strong>Save settings</strong>.
+        Reset and replay. The result must report <strong>passed</strong>.</p>
+        <p id="attempt"></p></div>
+    <section id="portal" aria-label="Branch office portal">
+        <div class="menubar" id="menubar"></div>
+        <div class="layout" id="layout">
+            <aside><button class="rebtn" id="sidebar-toggle" type="button" aria-controls="sidebar" aria-expanded="true"></button><nav id="sidebar"></nav></aside>
+            <div class="content"><nav class="crumbs" id="crumbs"></nav><div id="view"></div></div>
+        </div>
+    </section>
+    <output id="result" aria-live="polite">Waiting for saved settings.</output>
+    <button id="reset" type="button">Reset portal</button>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
+</main>
+<script src="progress.js?v=ee67cebaa63f"></script>
+<script>
+(() => {
+    const words = {
+        en: {
+            language: 'Language', menu: 'Menu', mainMenu: 'Main menu', home: 'Home', customers: 'Customers', accounts: 'Accounts',
+            contacts: 'Contacts', disputes: 'Disputes', operations: 'Operations', orders: 'Orders', shipments: 'Shipments',
+            reports: 'Reports', monthly: 'Monthly', yearly: 'Yearly', shortcuts: 'Shortcuts', favourites: 'Favourites',
+            recent: 'Recent', hideSidebar: 'Hide sidebar', showSidebar: 'Show sidebar', breadcrumb: 'Breadcrumb',
+            homeText: 'Choose a menu to start.', sectionText: 'Choose a page.', empty: 'No open items.', notFound: 'Page not found',
+            filter: 'Filter', rowsPerPage: 'Rows per page', loading: 'Loading accounts...', noMatch: 'No accounts match.',
+            account: 'Account', name: 'Name', city: 'City', balance: 'Balance', open: 'Open', pages: 'Pages', page: 'Page',
+            previous: 'Previous', next: 'Next', pageOf: (page, pages) => `Page ${page} of ${pages}`,
+            sections: 'Account sections', overview: 'Overview', settings: 'Settings', history: 'History',
+            statement: 'Statement', quarterly: 'Quarterly', none: 'None', paperless: 'Paperless', creditLimit: 'Credit limit',
+            notes: 'Notes', address: 'Address', changeAddress: 'Change address', street: 'Street', cityPostal: 'City and postal code',
+            postal: 'Postal code', review: 'Review', stepOf: (step, steps) => `Step ${step} of ${steps}`, back: 'Back',
+            apply: 'Apply', save: 'Save settings', saved: 'Settings saved', expires: 'Session expires in 4:59', dismiss: 'Dismiss',
+            events: ['Statement sent', 'Payment received', 'Credit limit reviewed']
+        },
+        es: {
+            language: 'Idioma', menu: 'Menú', mainMenu: 'Menú principal', home: 'Inicio', customers: 'Clientes', accounts: 'Cuentas',
+            contacts: 'Contactos', disputes: 'Disputas', operations: 'Operaciones', orders: 'Pedidos', shipments: 'Envíos',
+            reports: 'Informes', monthly: 'Mensual', yearly: 'Anual', shortcuts: 'Accesos directos', favourites: 'Favoritos',
+            recent: 'Recientes', hideSidebar: 'Ocultar barra lateral', showSidebar: 'Mostrar barra lateral', breadcrumb: 'Ruta de navegación',
+            homeText: 'Elija un menú para empezar.', sectionText: 'Elija una página.', empty: 'Sin elementos pendientes.', notFound: 'Página no encontrada',
+            filter: 'Filtrar', rowsPerPage: 'Filas por página', loading: 'Cargando cuentas...', noMatch: 'Ninguna cuenta coincide.',
+            account: 'Cuenta', name: 'Nombre', city: 'Ciudad', balance: 'Saldo', open: 'Abrir', pages: 'Páginas', page: 'Página',
+            previous: 'Anterior', next: 'Siguiente', pageOf: (page, pages) => `Página ${page} de ${pages}`,
+            sections: 'Secciones de la cuenta', overview: 'Resumen', settings: 'Configuración', history: 'Historial',
+            statement: 'Estado de cuenta', quarterly: 'Trimestral', none: 'Ninguno', paperless: 'Sin papel', creditLimit: 'Límite de crédito',
+            notes: 'Notas', address: 'Dirección', changeAddress: 'Cambiar dirección', street: 'Calle', cityPostal: 'Ciudad y código postal',
+            postal: 'Código postal', review: 'Revisión', stepOf: (step, steps) => `Paso ${step} de ${steps}`, back: 'Atrás',
+            apply: 'Aplicar', save: 'Guardar configuración', saved: 'Configuración guardada', expires: 'La sesión expira en 4:59', dismiss: 'Descartar',
+            events: ['Estado de cuenta enviado', 'Pago recibido', 'Límite de crédito revisado']
+        }
+    };
+    const sections = { customers: ['accounts', 'contacts', 'disputes'], operations: ['orders', 'shipments'], reports: ['monthly', 'yearly'] };
+    const firsts = ['Andes', 'Pacifico', 'Inca', 'Sol', 'Mistral', 'Condor', 'Huascar'];
+    const seconds = ['Trading', 'Foods', 'Logistics', 'Mining', 'Textiles', 'Imports'];
+    const cities = ['Lima', 'Arequipa', 'Cusco', 'Trujillo', 'Piura', 'Chiclayo'];
+    // ACC-3001 to ACC-3042; ACC-3041 is a near twin of the task's account.
+    const accounts = Array.from({ length: 42 }, (_, i) => ({
+        id: `ACC-${3001 + i}`, name: `${firsts[i % 7]} ${seconds[i % 6]}`, city: cities[(i * 5) % 6],
+        balance: (1000 + (i * 7919) % 90000 / 100).toFixed(2), street: `Jr. Ucayali ${120 + i * 3}`, postal: `150${10 + i}`
+    }));
+    accounts[40].name = 'Huascar Imports Sur';
+    const portal = document.getElementById('portal');
+    const menubar = document.getElementById('menubar');
+    const layout = document.getElementById('layout');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const crumbs = document.getElementById('crumbs');
+    const view = document.getElementById('view');
+    const result = document.getElementById('result');
+    const langKey = 'aaforms:lang';
+    let lang = 'en';
+    try { if (localStorage.getItem(langKey) === 'es') lang = 'es'; } catch { /* English when storage is blocked. */ }
+    let attempt = 1, rows = 5, filter = '', saves = [], settings, drafts, wizard, lastPath = null, loadTimer, bannerTimer, focusTab = false;
+    const openSidebar = { favourites: true, recent: true };
+    const t = key => words[lang][key];
+
+    function resetSettings() {
+        settings = Object.fromEntries(accounts.map(a => [a.id,
+            { statement: 'quarterly', paperless: false, creditLimit: '5000', notes: '', street: a.street, city: a.city, postal: a.postal }]));
+        drafts = {};
+        wizard = null;
+    }
+    function setLang(value) {
+        lang = value;
+        try { localStorage.setItem(langKey, lang); } catch { /* The switch still works for this page. */ }
+        chrome();
+        render();
+    }
+    function closeMenus() {
+        menubar.querySelectorAll('[aria-haspopup]').forEach(button => {
+            button.setAttribute('aria-expanded', 'false');
+            document.getElementById(button.getAttribute('aria-controls')).hidden = true;
+        });
+    }
+    // Everything outside the routed view: menus, sidebar, language buttons, banner text and the attempt line.
+    function chrome() {
+        portal.lang = lang;
+        document.getElementById('attempt').textContent = `Attempt ${attempt}: ${lang === 'en' ? 'English' : 'Spanish'}, ${rows} rows per page`;
+        const names = Object.keys(sections);
+        const order = names.slice((attempt - 1) % 3).concat(names.slice(0, (attempt - 1) % 3));
+        menubar.innerHTML = `<button type="button" class="menu-toggle" aria-expanded="false" aria-controls="menus">${t('menu')}</button>
+            <nav class="menus" id="menus" aria-label="${t('mainMenu')}"></nav>`;
+        const toggle = menubar.querySelector('.menu-toggle');
+        toggle.addEventListener('click', () => {
+            const open = !menubar.classList.contains('open');
+            menubar.classList.toggle('open', open);
+            toggle.setAttribute('aria-expanded', open);
+            if (!open) closeMenus();
+        });
+        for (const section of order) {
+            const menu = document.createElement('div');
+            menu.className = 'menu';
+            menu.innerHTML = `<button type="button" id="menubtn-${section}" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-${section}">${t(section)}</button>
+                <ul role="menu" id="menu-${section}" aria-labelledby="menubtn-${section}" hidden>${sections[section].map(child =>
+                    `<li role="none"><button type="button" role="menuitem" data-route="#/${section}/${child}">${t(child)}</button></li>`).join('')}</ul>`;
+            const button = menu.querySelector('button');
+            button.addEventListener('click', () => {
+                const open = button.getAttribute('aria-expanded') !== 'true';
+                closeMenus();
+                button.setAttribute('aria-expanded', open);
+                menu.querySelector('ul').hidden = !open;
+            });
+            menu.querySelectorAll('[role=menuitem]').forEach(item => item.addEventListener('click', () => {
+                closeMenus();
+                menubar.classList.remove('open');
+                toggle.setAttribute('aria-expanded', 'false');
+                location.hash = item.dataset.route;
+            }));
+            menubar.querySelector('.menus').append(menu);
+        }
+        const hidden = sidebar.hidden;
+        sidebarToggle.textContent = hidden ? t('showSidebar') : t('hideSidebar');
+        sidebar.setAttribute('aria-label', t('shortcuts'));
+        sidebar.innerHTML = `<details data-key="favourites"><summary>${t('favourites')}</summary><ul>
+                <li><a href="#/customers/accounts">${t('accounts')}</a></li><li><a href="#/reports/monthly">${t('monthly')}</a></li>
+                <li><a href="#/operations/orders">${t('orders')}</a></li></ul></details>
+            <details data-key="recent"><summary>${t('recent')}</summary><ul>
+                <li><a href="#/customers/accounts/ACC-3041">ACC-3041</a></li><li><a href="#/customers/accounts/ACC-3024">ACC-3024</a></li>
+                <li><a href="#/customers/disputes">${t('disputes')}</a></li></ul></details>`;
+        sidebar.querySelectorAll('details').forEach(details => {
+            details.open = openSidebar[details.dataset.key];
+            details.addEventListener('toggle', () => { openSidebar[details.dataset.key] = details.open; });
+        });
+        const banner = document.getElementById('banner');
+        if (banner) {
+            banner.querySelector('span').textContent = t('expires');
+            banner.querySelector('button').textContent = t('dismiss');
+        }
+        const group = document.querySelector('.lang');
+        if (group) {
+            group.setAttribute('aria-label', t('language'));
+            group.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', button.dataset.lang === lang));
+        }
+    }
+    function crumbTrail(parts) {
+        const trail = [['#/home', t('home')]];
+        parts.forEach((part, index) => {
+            if (part === 'home') return;
+            const label = words[lang][part] && typeof words[lang][part] === 'string' ? t(part) : part;
+            trail.push([`#/${parts.slice(0, index + 1).join('/')}`, label]);
+        });
+        crumbs.setAttribute('aria-label', t('breadcrumb'));
+        crumbs.innerHTML = `<ol>${trail.map(([href, label], index) =>
+            `<li><a href="${href}"${index === trail.length - 1 ? ' aria-current="page"' : ''}>${label}</a></li>`).join('')}</ol>`;
+    }
+    function render() {
+        clearTimeout(loadTimer);
+        closeMenus();
+        const [path, query = ''] = location.hash.slice(1).split('?');
+        const parts = path.split('/').filter(Boolean);
+        const key = parts.join('/');
+        const entered = key !== lastPath;
+        lastPath = key;
+        const [section, child, id, tab = 'overview'] = parts;
+        const account = section === 'customers' && child === 'accounts' && accounts.find(a => a.id === id);
+        crumbTrail(parts);
+        if (key === 'home') view.innerHTML = `<h2>${t('home')}</h2><p>${t('homeText')}</p>`;
+        else if (key === 'customers/accounts') accountsView(entered, Number(new URLSearchParams(query).get('page')) || 1);
+        else if (account && parts.length <= 4 && ['overview', 'settings', 'history'].includes(tab)) accountView(account, tab);
+        else if (sections[section] && parts.length === 1) {
+            view.innerHTML = `<h2>${t(section)}</h2><p>${t('sectionText')}</p><ul>${sections[section].map(item =>
+                `<li><a href="#/${section}/${item}">${t(item)}</a></li>`).join('')}</ul>`;
+        } else if (sections[section]?.includes(child) && parts.length === 2) view.innerHTML = `<h2>${t(child)}</h2><p>${t('empty')}</p>`;
+        else view.innerHTML = `<h2>${t('notFound')}</h2><p><a href="#/home">${t('home')}</a></p>`;
+        clearTimeout(bannerTimer);
+        if (!document.getElementById('banner')) bannerTimer = setTimeout(showBanner, 1500);
+    }
+    function showBanner() {
+        const banner = document.createElement('div');
+        banner.id = 'banner';
+        banner.className = 'banner';
+        banner.setAttribute('role', 'status');
+        banner.innerHTML = `<span>${t('expires')}</span><button type="button" class="rebtn">${t('dismiss')}</button>`;
+        banner.querySelector('button').addEventListener('click', () => banner.remove());
+        portal.prepend(banner);
+    }
+    function accountsView(entered, page) {
+        view.innerHTML = `<h2>${t('accounts')}</h2><div class="toolbar">
+            <label>${t('filter')}<input type="text" autocomplete="off"></label>
+            <label>${t('rowsPerPage')}<select><option>5</option><option>10</option><option>20</option></select></label></div>
+            <div class="table-wrap"></div><nav class="pager" aria-label="${t('pages')}"></nav>`;
+        const input = view.querySelector('input');
+        const select = view.querySelector('select');
+        input.value = filter;
+        select.value = String(rows);
+        const first = () => { clearTimeout(loadTimer); history.replaceState(null, '', '#/customers/accounts?page=1'); fill(1); };
+        input.addEventListener('input', () => { filter = input.value; first(); });
+        select.addEventListener('change', () => { rows = Number(select.value); chrome(); first(); });
+        if (!entered) return fill(page);
+        view.querySelector('.table-wrap').innerHTML = `<table aria-label="${t('accounts')}"><tbody><tr><td>${t('loading')}</td></tr></tbody></table>`;
+        loadTimer = setTimeout(() => fill(page), 600);
+    }
+    function fill(page) {
+        const query = filter.trim().toLowerCase();
+        const list = accounts.filter(a => a.id.toLowerCase().includes(query) || a.name.toLowerCase().includes(query));
+        const pages = Math.max(1, Math.ceil(list.length / rows));
+        page = Math.min(Math.max(1, page), pages);
+        const wrap = view.querySelector('.table-wrap');
+        wrap.innerHTML = `<table aria-label="${t('accounts')}"><thead><tr><th scope="col">${t('account')}</th><th scope="col">${t('name')}</th>
+            <th scope="col">${t('city')}</th><th scope="col">${t('balance')}</th><th scope="col"><span hidden>${t('open')}</span></th></tr></thead><tbody></tbody></table>`;
+        const body = wrap.querySelector('tbody');
+        for (const a of list.slice((page - 1) * rows, page * rows)) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${a.id}</td><td>${a.name}</td><td>${a.city}</td><td>PEN ${a.balance}</td><td><button type="button" class="rebtn">${t('open')}</button></td>`;
+            const button = row.querySelector('button');
+            button.id = `open-${crypto.randomUUID()}`;
+            button.addEventListener('click', () => { location.hash = `#/customers/accounts/${a.id}`; });
+            body.append(row);
+        }
+        if (!list.length) body.innerHTML = `<tr><td colspan="5">${t('noMatch')}</td></tr>`;
+        const pager = view.querySelector('.pager');
+        pager.innerHTML = '';
+        const go = (label, target, attrs = {}) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'rebtn';
+            button.textContent = label;
+            Object.entries(attrs).forEach(([name, value]) => button.setAttribute(name, value));
+            button.disabled = target < 1 || target > pages;
+            button.addEventListener('click', () => { location.hash = `#/customers/accounts?page=${target}`; });
+            pager.append(button);
+        };
+        go(t('previous'), page - 1);
+        for (let number = 1; number <= pages; number++) {
+            go(String(number), number, number === page ? { 'aria-label': `${t('page')} ${number}`, 'aria-current': 'page' } : { 'aria-label': `${t('page')} ${number}` });
+        }
+        go(t('next'), page + 1);
+        const status = document.createElement('span');
+        status.textContent = t('pageOf')(page, pages);
+        pager.append(status);
+    }
+    function accountView(account, tab) {
+        const tabs = ['overview', 'settings', 'history'];
+        view.innerHTML = `<h2>${account.id} · ${account.name}</h2><div role="tablist" aria-label="${t('sections')}">${tabs.map(name =>
+            `<button type="button" role="tab" id="tab-${name}" aria-controls="panel" aria-selected="${name === tab}" tabindex="${name === tab ? 0 : -1}">${t(name)}</button>`).join('')}</div>
+            <div role="tabpanel" id="panel" aria-labelledby="tab-${tab}"></div>`;
+        const list = view.querySelectorAll('[role=tab]');
+        list.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                focusTab = true;
+                location.hash = `#/customers/accounts/${account.id}${tabs[index] === 'overview' ? '' : '/' + tabs[index]}`;
+            });
+            button.addEventListener('keydown', event => {
+                const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+                if (step) list[(index + step + tabs.length) % tabs.length].click();
+            });
+        });
+        if (focusTab) { focusTab = false; view.querySelector('[aria-selected=true]').focus(); }
+        const panel = document.getElementById('panel');
+        const saved = settings[account.id];
+        if (tab === 'overview') {
+            panel.innerHTML = `<dl><dt>${t('name')}</dt><dd>${account.name}</dd><dt>${t('balance')}</dt><dd>PEN ${account.balance}</dd>
+                <dt>${t('address')}</dt><dd></dd><dt>${t('statement')}</dt><dd>${t(saved.statement)}</dd>
+                <dt>${t('paperless')}</dt><dd>${saved.paperless ? '✓' : '-'}</dd></dl>`;
+            panel.querySelectorAll('dd')[2].textContent = `${saved.street}, ${saved.city} ${saved.postal}`;
+        } else if (tab === 'history') {
+            panel.innerHTML = `<ul>${t('events').map((event, index) => `<li>2026-0${7 + index}-15: ${event}</li>`).join('')}</ul>`;
+        } else settingsPanel(panel, account.id);
+    }
+    function settingsPanel(panel, id) {
+        const draft = drafts[id] ??= { ...settings[id] };
+        const uid = crypto.randomUUID();
+        panel.className = 'settings';
+        panel.innerHTML = `<fieldset><legend>${t('statement')}</legend>${['monthly', 'quarterly', 'none'].map(value =>
+                `<label class="check"><input type="radio" name="statement-${uid}" value="${value}">${t(value)}</label>`).join('')}</fieldset>
+            <label class="check"><input type="checkbox" id="paperless-${uid}">${t('paperless')}</label>
+            <div class="fg"><label for="limit-${uid}">${t('creditLimit')}</label><input type="number" id="limit-${uid}" min="0" step="100"></div>
+            <div class="fg"><label for="notes-${uid}">${t('notes')}</label><textarea id="notes-${uid}" rows="3"></textarea></div>
+            <p><strong>${t('address')}:</strong> <span class="address"></span></p><div class="wizard-slot"></div>
+            <div class="act"><button type="button" class="save">${t('save')}</button></div>`;
+        panel.querySelectorAll('[type=radio]').forEach(radio => {
+            radio.checked = radio.value === draft.statement;
+            radio.addEventListener('change', () => { if (radio.checked) draft.statement = radio.value; });
+        });
+        const paperless = panel.querySelector('[type=checkbox]');
+        paperless.checked = draft.paperless;
+        paperless.addEventListener('change', () => { draft.paperless = paperless.checked; });
+        const limit = panel.querySelector('[type=number]');
+        limit.value = draft.creditLimit;
+        limit.addEventListener('input', () => { draft.creditLimit = limit.value; });
+        const notes = panel.querySelector('textarea');
+        notes.value = draft.notes;
+        notes.addEventListener('input', () => { draft.notes = notes.value; });
+        panel.querySelector('.address').textContent = `${draft.street}, ${draft.city} ${draft.postal}`;
+        const slot = panel.querySelector('.wizard-slot');
+        if (wizard?.account === id) step(panel, slot, id);
+        else {
+            slot.innerHTML = `<button type="button" class="rebtn">${t('changeAddress')}</button>`;
+            slot.querySelector('button').addEventListener('click', () => {
+                wizard = { account: id, step: 1, street: '', city: '', postal: '' };
+                step(panel, slot, id, true);
+            });
+        }
+        panel.querySelector('.save').addEventListener('click', () => save(id));
+    }
+    // Each step builds new fields with new IDs; the wizard state follows input events only.
+    function step(panel, slot, id, focus) {
+        const uid = crypto.randomUUID();
+        const fields = [['street'], ['city', 'postal'], []][wizard.step - 1];
+        slot.innerHTML = `<fieldset class="wizard"><legend>${t('changeAddress')}</legend>
+            <p>${t('stepOf')(wizard.step, 3)}: ${[t('street'), t('cityPostal'), t('review')][wizard.step - 1]}</p>
+            ${fields.map(name => `<div class="fg"><label for="${name}-${uid}">${t(name)}</label><input type="text" id="${name}-${uid}" data-field="${name}" autocomplete="off" required></div>`).join('')}
+            ${wizard.step === 3 ? `<dl><dt>${t('street')}</dt><dd></dd><dt>${t('city')}</dt><dd></dd><dt>${t('postal')}</dt><dd></dd></dl>` : ''}
+            <div class="toolbar"></div></fieldset>`;
+        const bar = slot.querySelector('.toolbar');
+        const button = (label, action) => {
+            const element = document.createElement('button');
+            element.type = 'button';
+            element.textContent = label;
+            element.addEventListener('click', action);
+            bar.append(element);
+            return element;
+        };
+        if (wizard.step > 1) button(t('back'), () => { wizard.step--; step(panel, slot, id, true); });
+        if (wizard.step === 3) {
+            slot.querySelectorAll('dd').forEach((dd, index) => { dd.textContent = wizard[['street', 'city', 'postal'][index]]; });
+            button(t('apply'), () => {
+                Object.assign(drafts[id], { street: wizard.street, city: wizard.city, postal: wizard.postal });
+                wizard = null;
+                settingsPanel(panel, id);
+            });
+            return;
+        }
+        const next = button(t('next'), () => { wizard.step++; step(panel, slot, id, true); });
+        const inputs = [...slot.querySelectorAll('input')];
+        const valid = () => { next.disabled = inputs.some(input => !wizard[input.dataset.field]); };
+        inputs.forEach(input => {
+            input.value = wizard[input.dataset.field];
+            input.addEventListener('input', () => { wizard[input.dataset.field] = input.value.trim(); valid(); });
+        });
+        valid();
+        if (focus) inputs[0].focus();
+    }
+    function save(id) {
+        const saved = settings[id] = { ...drafts[id] };
+        saves.push(id);
+        const passed = saves.every(account => account === 'ACC-3042') && saved.statement === 'monthly' && saved.paperless === true
+            && saved.street === 'Av. Arequipa 1234' && saved.city === 'Lima' && saved.postal === '15046';
+        result.textContent = JSON.stringify({ status: passed ? 'passed' : 'failed', attempt, account: id, ...saved, saved: saves });
+        AAProgress.set('case-navigation.html', passed === true);
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.setAttribute('role', 'status');
+        toast.textContent = t('saved');
+        document.body.append(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.hidden = !sidebar.hidden;
+        layout.classList.toggle('collapsed', sidebar.hidden);
+        sidebarToggle.setAttribute('aria-expanded', !sidebar.hidden);
+        sidebarToggle.textContent = sidebar.hidden ? t('showSidebar') : t('hideSidebar');
+    });
+    document.addEventListener('click', event => { if (!menubar.contains(event.target)) closeMenus(); });
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        const open = menubar.querySelector('[aria-haspopup][aria-expanded=true]');
+        closeMenus();
+        if (open) open.focus();
+    });
+    document.getElementById('reset').addEventListener('click', () => {
+        AAProgress.set('case-navigation.html', false);
+        attempt++;
+        rows = attempt % 2 ? 5 : 10;
+        filter = '';
+        saves = [];
+        resetSettings();
+        result.textContent = 'Waiting for saved settings.';
+        lastPath = null;
+        if (location.hash !== '#/home') history.pushState(null, '', '#/home');
+        setLang(lang === 'en' ? 'es' : 'en');
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const group = document.createElement('div');
+        group.className = 'lang';
+        group.setAttribute('role', 'group');
+        group.innerHTML = '<button type="button" data-lang="en">EN</button><button type="button" data-lang="es">ES</button>';
+        group.querySelectorAll('button').forEach(button => button.addEventListener('click', () => setLang(button.dataset.lang)));
+        (document.querySelector('.theme-controls') || portal).prepend(group);
+        chrome();
+    });
+    window.addEventListener('hashchange', render);
+    if (!location.hash.startsWith('#/')) history.replaceState(null, '', '#/home');
+    resetSettings();
+    chrome();
+    render();
+})();
+</script>
+</body>
+</html>
