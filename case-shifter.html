@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shape shifter - AA Forms</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <style>
+        #shifter { display: block; }
+        #fields { display: grid; gap: 20px 24px; margin: 24px 0; }
+        #fields[data-layout="wide"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #fields[data-layout="compact"] { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 16px; }
+        #fields[data-layout="offset"] { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+        #fields[data-layout="offset"] .fg { width: calc(100% - 60px); }
+        #fields[data-layout="offset"] .fg:nth-child(even) { margin-left: 60px; }
+        #fields input:not([type="checkbox"]), #fields select, #fields textarea {
+            width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px;
+            border: 1px solid #7b8792; border-radius: 3px;
+            background: var(--theme-field, #fafbfc); color: var(--theme-ink, #1a2328); font: inherit;
+        }
+        #fields textarea { resize: vertical; }
+        #fields .check { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+        #fields .check input { margin: 0; flex: 0 0 auto; width: 20px; height: 20px; }
+        .task ul { margin: 8px 0 0; padding-left: 20px; }
+        .toolbar { align-items: center; }
+        .toolbar .rebtn { margin: 0; }
+        #shuffle { min-height: 44px; }
+        #shuffle:disabled { cursor: not-allowed; }
+        #layout-status { margin: 0; color: var(--theme-muted, #3a4350); font-variant-numeric: tabular-nums; }
+        #result[data-status="failed"] { color: var(--theme-danger, #a12622); }
+        #result[data-status="passed"] { color: var(--theme-success, #176538); }
+        @media (max-width: 650px) {
+            #fields[data-layout="wide"] { grid-template-columns: minmax(0, 1fr); }
+            #fields[data-layout="compact"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+            #fields[data-layout="offset"] .fg { width: calc(100% - 24px); }
+            #fields[data-layout="offset"] .fg:nth-child(even) { margin-left: 24px; }
+        }
+    </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
+<main class="container">
+    <h1>Shape shifter</h1>
+    <p class="desc">Each shuffle changes the field order and layout. IDs and labels stay the same.
+        Normal shuffling keeps entered values. Capture the initial form, click <strong>Reset form</strong> to clear values,
+        click <strong>Shuffle layout</strong>, then replay and submit.</p>
+    <div class="task">
+        <p><strong>Synthetic task:</strong> Enter these exact values, tick the confirmation, then click <strong>Submit order</strong>.</p>
+        <ul>
+            <li>Contact name: <strong>Ada Torres</strong>. Email: <strong>ada@example.test</strong>.</li>
+            <li>Department: <strong>Procurement</strong>. Order reference: <strong>PO-2048</strong>.</li>
+            <li>Units: <strong>3</strong>. Delivery city: <strong>Lima</strong>.</li>
+            <li>Notes: <strong>Ship together.</strong> Tick <strong>I confirm this synthetic order</strong>.</li>
+        </ul>
+    </div>
+    <div class="toolbar">
+        <button id="shuffle" type="button" aria-controls="fields" aria-describedby="layout-status">Shuffle layout</button>
+        <button class="rebtn" type="reset" form="shifter">Reset form</button>
+    </div>
+    <p id="layout-status" role="status">Layout 1 of 120,960: Wide.</p>
+    <form id="shifter" autocomplete="off">
+        <div id="fields" data-layout="wide">
+            <div class="fg"><label for="contact">Contact name</label><input id="contact" name="contact" type="text" maxlength="60" required></div>
+            <div class="fg"><label for="email">Email</label><input id="email" name="email" type="email" maxlength="100" required></div>
+            <div class="fg"><label for="department">Department</label><select id="department" name="department" required><option value="">Select a department</option><option>Procurement</option><option>Operations</option><option>Sales</option></select></div>
+            <div class="fg"><label for="reference">Order reference</label><input id="reference" name="reference" type="text" pattern="PO-[0-9]{4}" maxlength="7" title="Use PO- followed by four digits" required></div>
+            <div class="fg"><label for="units">Units</label><input id="units" name="units" type="number" min="1" max="100" step="1" required></div>
+            <div class="fg"><label for="city">Delivery city</label><select id="city" name="city" required><option value="">Select a city</option><option>Lima</option><option>Cusco</option><option>Arequipa</option></select></div>
+            <div class="fg"><label for="notes">Notes</label><textarea id="notes" name="notes" rows="2" maxlength="120" required></textarea></div>
+            <div class="fg"><label class="check" for="confirmation"><input id="confirmation" name="confirmation" type="checkbox" required>I confirm this synthetic order</label></div>
+        </div>
+        <button type="submit">Submit order</button>
+    </form>
+    <output id="result" aria-live="polite">Waiting for an order.</output>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
+</main>
+<script src="progress.js?v=ee67cebaa63f"></script>
+<script>
+(() => {
+    const form = document.getElementById('shifter');
+    const fields = document.getElementById('fields');
+    const groups = [...fields.children];
+    const shuffle = document.getElementById('shuffle');
+    const status = document.getElementById('layout-status');
+    const result = document.getElementById('result');
+    const factorials = [1, 1, 2, 6, 24, 120, 720, 5040, 40320];
+    const families = ['wide', 'compact', 'offset'];
+    const limit = factorials[groups.length] * families.length;
+    const expected = { contact: 'Ada Torres', email: 'ada@example.test', department: 'Procurement',
+        reference: 'PO-2048', units: '3', city: 'Lima', notes: 'Ship together.', confirmation: true };
+    let layout = 0;
+    function showLayout() {
+        const family = layout % families.length;
+        // 11 is coprime to 8!: every family visits each permutation once.
+        let rank = (Math.floor(layout / 3) * 11 + family * 13440) % factorials[groups.length];
+        const remaining = [...groups];
+        const order = [];
+        for (let size = groups.length; size > 0; size--) {
+            const block = factorials[size - 1];
+            order.push(remaining.splice(Math.floor(rank / block), 1)[0]);
+            rank %= block;
+        }
+        fields.dataset.layout = families[family];
+        fields.append(...order);
+        shuffle.disabled = layout === limit - 1;
+        const name = families[family][0].toUpperCase() + families[family].slice(1);
+        status.textContent = `Layout ${(layout + 1).toLocaleString('en-US')} of ${limit.toLocaleString('en-US')}: ${name}.` +
+            (shuffle.disabled ? ' All layouts used. Reset form to shuffle again.' : '');
+    }
+    shuffle.addEventListener('click', () => {
+        if (layout === limit - 1) return;
+        layout++;
+        showLayout();
+    });
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const values = Object.fromEntries(Object.keys(expected).map(key =>
+            [key, key === 'confirmation' ? form.elements[key].checked : form.elements[key].value]));
+        const passed = Object.entries(expected).every(([key, value]) => values[key] === value);
+        result.dataset.status = passed ? 'passed' : 'failed';
+        result.textContent = JSON.stringify({ status: result.dataset.status, ...values });
+        AAProgress.set('case-shifter.html', passed);
+    });
+    form.addEventListener('reset', () => {
+        AAProgress.set('case-shifter.html', false);
+        result.textContent = 'Waiting for an order.';
+        delete result.dataset.status;
+        layout = 0;
+        showLayout();
+    });
+    // ponytail: 8! * 3 layouts per run; reset starts a new run if more are needed.
+    showLayout();
+})();
+</script>
+</body>
+</html>

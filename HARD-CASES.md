@@ -30,7 +30,7 @@ new theme markup from reusing the old light-only stylesheet in browser caches.
 ## Completion and difficulty
 
 The single catalog is ordered by estimated capture/replay difficulty:
-classic People List → approval queue → branch office portal → supplier wizard → document amendment →
+classic People List → Shape shifter → approval queue → branch office portal → supplier wizard → document amendment →
 recycled invoices → canvas seats → closed shadow form → nested opaque portal.
 This is a training order, not a claim that every recorder fails in the same order.
 
@@ -43,7 +43,7 @@ This is a training order, not a claim that every recorder fails in the same orde
   Draft inputs still follow each fixture's original behavior. Old visited-link data
   is not converted into completion.
 - Each existing reset/rebuild/recreate button keeps its fixture behavior and clears
-  that case's completion. **Reset progress** on the catalog clears all nine marks;
+  that case's completion. **Reset progress** on the catalog clears all ten marks;
   it does not erase People List or expense-demo data.
 - Open catalog tabs update when another tab completes or resets a case.
 - The branch office portal completes when **Save settings** returns `passed`. A save
@@ -98,6 +98,7 @@ the removed srcdoc cases does not create the opaque-origin barrier tested here.
 
 | Fixture | Capture or replay obstacle | Expected scope |
 | --- | --- | --- |
+| [Shape shifter](case-shifter.html) | Each shuffle moves the same eight native field groups and changes their layout. IDs, labels, values and submitted results stay the same. DOM order follows visual order. | Layout changes can break coordinate, image and positional XPath captures. Stable ID selectors still work. A live AA failure is not established. |
 | [Closed shadow](case-closed.html) | Native fields exist inside `mode: 'closed'`; normal page queries and `host.shadowRoot` cannot reach them. | Documented AA object-capture limit. Keyboard, image, or other privileged paths may still work. |
 | [Nested opaque frames](case-opaque.html) | Two sandboxed documents omit `allow-same-origin`; an open shadow root sits in the inner document. Recreating frames discards both documents. | Browser access barrier is testable. Opaque sandbox origins are not the same fixture as two separately hosted domains; exact AA behavior is unverified. |
 | [Recycled invoice rows](case-recycled.html) | 120 records share six input nodes. The same ID and element can refer to a different invoice after scrolling. | Tests absent targets and silent wrong-record replay. Context-aware selection can succeed. |
@@ -145,6 +146,26 @@ not establish that AA Capture fails.
    save of another account in the same attempt, or of `ACC-3042` with other values,
    reports `failed`. Values set on the DOM without input or change events are not saved.
    The language choice is kept under `aaforms:lang`.
+9. **Shape shifter:** Enter `Ada Torres`, `ada@example.test`, `Procurement`,
+   `PO-2048`, `3`, `Lima` and `Ship together.`. Tick **I confirm this synthetic order**
+   and click **Submit order**. Capture the initial form, click **Reset form** to
+   clear values, click **Shuffle layout**, then replay and submit. The result must
+   have `status: "passed"` and the exact submitted values.
+   A valid submission with a wrong value reports `failed` and clears completion.
+   A native validation failure does not submit a result.
+
+   Each click changes the field order and selects Wide, Compact or Offset geometry.
+   The narrow layouts remain distinct: one column, two columns or alternating
+   insets. Normal shuffling retains the actual fields, IDs, labels, entered values, last result
+   and completion. Positional XPath can change because the nodes move.
+   Stable ID selectors still reach the same fields.
+
+   The deterministic sequence has `8! × 3 = 120,960` unique layouts per run,
+   including the initial layout. It uses a counter and fixed-size arrays, with
+   no random retry loop or stored layout history. After `120,959` shuffles, the
+   button stops and asks for a reset. **Reset form** clears the fields, result and
+   this case's completion, and restores the initial layout. Reload starts a new
+   layout run and clears the draft; saved completion remains.
 
 For a live AA run, record the browser and extension versions, Recorder package,
 Bot Agent, capture technology, selected object properties, and fallback settings.
@@ -163,12 +184,19 @@ assertions and does not need a test framework or package manifest in this repo.
 python3 -m http.server 8765 --bind 127.0.0.1
 # In another terminal; set NODE_PATH if Playwright is installed outside this repo:
 CHROMIUM_PATH=/path/to/compatible/chrome node check-hard-cases.cjs
+CHROMIUM_PATH=/path/to/compatible/chrome node check-shifter.cjs
 ```
 
 Set `AA_FORMS_URL` to test another local server. Set `AA_SCREENSHOTS` to a disposable
 directory to save desktop and mobile screenshots. The check covers positive tasks,
 wrong-target failures, frame isolation, node replacement, reset, keyboard use,
 mobile overflow, local links, and browser errors.
+
+`check-shifter.cjs` checks all `120,960` layout states and the exhaustion guard,
+then checks `1,001` rendered layouts. It also checks field identity, IDs, labels,
+values, keyboard order, stable selectors, valid and wrong submissions, native
+validation, reset, saved completion and each layout at 390 px and 1280 px in
+both themes. Live AA acceptance remains untested.
 
 Validation of the consolidated catalog on 2026-09-10:
 
