@@ -60,8 +60,8 @@ assert.equal(nodes.fields.children.map(group => group.index).join(''), '01234567
             await page.locator('#confirmation').check();
         }
         await go('index.html');
-        assert.equal(await page.locator('.sap-link').count(), 10);
-        assert.equal(await page.locator('#progress').getAttribute('max'), '10');
+        assert.equal(await page.locator('.sap-link').count(), 11);
+        assert.equal(await page.locator('#progress').getAttribute('max'), '11');
         await page.evaluate(() => AAProgress.set('case-navigation.html', true));
         await page.getByRole('link', { name: /2\. Shape shifter/ }).click();
         assert.equal(await completed(), 'Not completed');
@@ -207,11 +207,11 @@ assert.equal(nodes.fields.children.map(group => group.index).join(''), '01234567
             }
         }
         await page.getByRole('link', { name: 'Back to Main Menu' }).click();
-        assert.equal(await page.locator('#progress-count').innerText(), '1 of 10 completed');
+        assert.equal(await page.locator('#progress-count').innerText(), '1 of 11 completed');
         await page.evaluate(() => AAProgress.set('case-shifter.html', true));
-        assert.equal(await page.locator('#progress-count').innerText(), '2 of 10 completed');
+        assert.equal(await page.locator('#progress-count').innerText(), '2 of 11 completed');
         await page.getByRole('button', { name: 'Reset progress' }).click();
-        assert.equal(await page.locator('#progress-count').innerText(), '0 of 10 completed');
+        assert.equal(await page.locator('#progress-count').innerText(), '0 of 11 completed');
         assert.equal(await page.evaluate(() => AAProgress.isComplete('case-shifter.html')), false);
         assert.deepEqual(errors, []);
         console.log(`Shape shifter passed: 120,960 unique states and exhaustion; 1,001 rendered layouts; stable nodes, IDs, labels, values, keyboard order, exact submissions, resets, progress, light/dark and 390/1280px. Chromium ${browser.version()}.`);

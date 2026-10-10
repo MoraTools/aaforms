@@ -31,7 +31,7 @@ new theme markup from reusing the old light-only stylesheet in browser caches.
 
 The single catalog is ordered by estimated capture/replay difficulty:
 classic People List → Shape shifter → approval queue → branch office portal → supplier wizard → document amendment →
-recycled invoices → canvas seats → closed shadow form → nested opaque portal.
+recycled invoices → mutation ladder → canvas seats → closed shadow form → nested opaque portal.
 This is a training order, not a claim that every recorder fails in the same order.
 
 - Clicking a link or filling fields does not mark a case complete.
@@ -43,7 +43,7 @@ This is a training order, not a claim that every recorder fails in the same orde
   Draft inputs still follow each fixture's original behavior. Old visited-link data
   is not converted into completion.
 - Each existing reset/rebuild/recreate button keeps its fixture behavior and clears
-  that case's completion. **Reset progress** on the catalog clears all ten marks;
+  that case's completion. **Reset progress** on the catalog clears all eleven marks;
   it does not erase People List or expense-demo data.
 - Open catalog tabs update when another tab completes or resets a case.
 - The branch office portal completes when **Save settings** returns `passed`. A save
@@ -99,6 +99,7 @@ the removed srcdoc cases does not create the opaque-origin barrier tested here.
 | Fixture | Capture or replay obstacle | Expected scope |
 | --- | --- | --- |
 | [Shape shifter](case-shifter.html) | Each shuffle moves the same eight native field groups and changes their layout. IDs, labels, values and submitted results stay the same. DOM order follows visual order. | Layout changes can break coordinate, image and positional XPath captures. Stable ID selectors still work. A live AA failure is not established. |
+| [Mutation ladder](case-mutation.html) | Six cumulative levels move geometry, reorder groups, nest wrappers, replace controls, regenerate IDs and names, then add an editable Reference form with repeated labels and buttons before Current. | Tests coordinates, positional paths, stale references, attributes and form context. Native semantic selection scoped to Current order can still pass. Live AA behavior is unverified. |
 | [Closed shadow](case-closed.html) | Native fields exist inside `mode: 'closed'`; normal page queries and `host.shadowRoot` cannot reach them. | Documented AA object-capture limit. Keyboard, image, or other privileged paths may still work. |
 | [Nested opaque frames](case-opaque.html) | Two sandboxed documents omit `allow-same-origin`; an open shadow root sits in the inner document. Recreating frames discards both documents. | Browser access barrier is testable. Opaque sandbox origins are not the same fixture as two separately hosted domains; exact AA behavior is unverified. |
 | [Recycled invoice rows](case-recycled.html) | 120 records share six input nodes. The same ID and element can refer to a different invoice after scrolling. | Tests absent targets and silent wrong-record replay. Context-aware selection can succeed. |
@@ -167,6 +168,36 @@ not establish that AA Capture fails.
    this case's completion, and restores the initial layout. Reload starts a new
    layout run and clears the draft; saved completion remains.
 
+10. **Mutation ladder:** Complete the same synthetic order as Shape shifter in
+    **Current order**. Capture the form, click **Increase difficulty**, then replay
+    and submit. The result must contain `status: "passed"` and the exact values.
+    A valid wrong submission clears this case's completion. Native validation
+    failures keep the result and completion that existed before the submission.
+
+    Level 0 is the baseline. Each click advances one level and keeps earlier
+    obstacles. The button stops at level 6, with no cycling:
+
+    | Level | Added mechanism |
+    | --- | --- |
+    | 1 | Shifted geometry; the same controls and IDs remain. |
+    | 2 | Existing groups move to a new DOM order. Tab order follows visible order. |
+    | 3 | Two real wrappers are added around each group's label and control. The live controls remain. |
+    | 4 | Native fields and the submit button are replaced. Old element references detach; IDs and names remain. |
+    | 5 | IDs and names change to generated values. Labels retain correct associations. An internal control map reads values. |
+    | 6 | An editable **Reference order** form appears before **Current order** with the same field labels and **Submit order** button. All IDs remain unique. Reference always reports `failed`, even with exact values. |
+
+    Each increase starts an empty attempt and clears the result and this case's
+    completion. **Clear form** empties both visible forms, result and completion
+    at the same level. It keeps that level's structure, nodes, IDs and names for
+    a retry. **Reset ladder** returns to level 0 with baseline IDs, names and
+    structure, empty inputs and no case completion. Other case marks and the
+    saved theme remain. Reload starts at level 0 with empty inputs but retains
+    saved completion, as the other fixtures do. No per-level history is stored.
+
+    These changes add capture obstacles. They do not block automation or remove
+    native accessibility. Scope semantic controls to **Current order** at level 6.
+    A browser check does not prove a live AA capture or replay failure.
+
 For a live AA run, record the browser and extension versions, Recorder package,
 Bot Agent, capture technology, selected object properties, and fallback settings.
 Keep capture success, replay success, wrong-target results, and fallback success
@@ -185,6 +216,7 @@ python3 -m http.server 8765 --bind 127.0.0.1
 # In another terminal; set NODE_PATH if Playwright is installed outside this repo:
 CHROMIUM_PATH=/path/to/compatible/chrome node check-hard-cases.cjs
 CHROMIUM_PATH=/path/to/compatible/chrome node check-shifter.cjs
+CHROMIUM_PATH=/path/to/compatible/chrome node check-mutation.cjs
 ```
 
 Set `AA_FORMS_URL` to test another local server. Set `AA_SCREENSHOTS` to a disposable
@@ -197,6 +229,13 @@ then checks `1,001` rendered layouts. It also checks field identity, IDs, labels
 values, keyboard order, stable selectors, valid and wrong submissions, native
 validation, reset, saved completion and each layout at 390 px and 1280 px in
 both themes. Live AA acceptance remains untested.
+
+`check-mutation.cjs` checks all seven levels: actual geometry, DOM/tab order,
+wrapper depth, early node identity, replacement, IDs and names, label associations,
+Reference failure and scoped Current success. It also checks exact and wrong
+values, native validation, each reset, the maximum guard, reload, other-case and
+theme preservation, the eleven-case catalog, and all levels at 390 px and
+1280 px in both themes, including field boundary contrast and page overflow.
 
 Validation of the consolidated catalog on 2026-09-10:
 

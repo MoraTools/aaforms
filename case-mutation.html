@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mutation ladder - AA Forms</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <style>
+        .order-form { display: block; }
+        .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; margin: 16px 0 24px; }
+        .fields.shifted { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+        .fields.shifted .fg { width: calc(100% - 60px); }
+        .fields.shifted .fg:nth-child(even) { margin-left: 60px; }
+        .fields input:not([type="checkbox"]), .fields select, .fields textarea {
+            width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px;
+            border: 1px solid #7b8792; border-radius: 3px;
+            background: var(--theme-field, #fafbfc); color: var(--theme-ink, #1a2328); font: inherit;
+        }
+        .fields textarea { resize: vertical; }
+        .fields label { display: block; }
+        .fields .check { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+        .fields .check input { margin: 0; flex: 0 0 auto; width: 20px; height: 20px; }
+        .task ul, #obstacles { margin: 8px 0; padding-left: 20px; }
+        .toolbar { align-items: center; }
+        .toolbar button, .order-form button { min-height: 44px; }
+        .toolbar .rebtn { margin: 0; }
+        #increase:disabled { cursor: not-allowed; }
+        #level-status { margin: 0; font-variant-numeric: tabular-nums; }
+        #difficulty { display: block; width: 100%; height: 12px; margin: 10px 0 16px; accent-color: var(--theme-action, #0070b8); }
+        #result[data-status="failed"] { color: var(--theme-danger, #a12622); }
+        #result[data-status="passed"] { color: var(--theme-success, #176538); }
+        @media (max-width: 650px) {
+            .fields { grid-template-columns: minmax(0, 1fr); }
+            .fields.shifted .fg { width: calc(100% - 24px); }
+            .fields.shifted .fg:nth-child(even) { margin-left: 24px; }
+        }
+    </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
+<main class="container">
+    <h1>Mutation ladder</h1>
+    <p class="desc">Each click on <strong>Increase difficulty</strong> adds one capture obstacle.
+        Capture, increase the level, then replay. Each increase clears the attempt and its completion.
+        These obstacles test capture and replay; a live AA run must establish the limits.</p>
+    <div class="task">
+        <p><strong>Synthetic task:</strong> Enter these exact values in <strong>Current order</strong>, tick the confirmation, then click <strong>Submit order</strong>.</p>
+        <ul>
+            <li>Contact name: <strong>Ada Torres</strong>. Email: <strong>ada@example.test</strong>.</li>
+            <li>Department: <strong>Procurement</strong>. Order reference: <strong>PO-2048</strong>.</li>
+            <li>Units: <strong>3</strong>. Delivery city: <strong>Lima</strong>.</li>
+            <li>Notes: <strong>Ship together.</strong> Tick <strong>I confirm this synthetic order</strong>.</li>
+        </ul>
+    </div>
+    <div class="toolbar">
+        <button id="increase" type="button" aria-controls="current-order" aria-describedby="level-status">Increase difficulty</button>
+        <button id="clear" class="rebtn" type="button">Clear form</button>
+        <button id="reset-ladder" class="rebtn" type="button">Reset ladder</button>
+    </div>
+    <p id="level-status" role="status">Level 0 of 6: Baseline.</p>
+    <progress id="difficulty" max="6" value="0" aria-labelledby="level-status"></progress>
+    <p><strong>Active obstacles:</strong></p>
+    <ol id="obstacles"><li>None. Stable native controls.</li></ol>
+    <form id="current-order" class="order-form" autocomplete="off" aria-labelledby="current-title">
+        <h2 id="current-title">Current order</h2>
+        <div id="fields" class="fields">
+            <div class="fg"><label for="contact">Contact name</label><input id="contact" name="contact" type="text" maxlength="60" required></div>
+            <div class="fg"><label for="email">Email</label><input id="email" name="email" type="email" maxlength="100" required></div>
+            <div class="fg"><label for="department">Department</label><select id="department" name="department" required><option value="">Select a department</option><option>Procurement</option><option>Operations</option><option>Sales</option></select></div>
+            <div class="fg"><label for="reference">Order reference</label><input id="reference" name="reference" type="text" pattern="PO-[0-9]{4}" maxlength="7" title="Use PO- followed by four digits" required></div>
+            <div class="fg"><label for="units">Units</label><input id="units" name="units" type="number" min="1" max="100" step="1" required></div>
+            <div class="fg"><label for="city">Delivery city</label><select id="city" name="city" required><option value="">Select a city</option><option>Lima</option><option>Cusco</option><option>Arequipa</option></select></div>
+            <div class="fg"><label for="notes">Notes</label><textarea id="notes" name="notes" rows="2" maxlength="120" required></textarea></div>
+            <div class="fg"><label class="check" for="confirmation"><input id="confirmation" name="confirmation" type="checkbox" required>I confirm this synthetic order</label></div>
+        </div>
+        <button id="submit-order" name="submit-order" type="submit">Submit order</button>
+    </form>
+    <output id="result" aria-live="polite">Waiting for an order.</output>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
+</main>
+<script src="progress.js?v=ee67cebaa63f"></script>
+<script>
+(() => {
+    const form = document.getElementById('current-order');
+    const fields = document.getElementById('fields');
+    const groups = [...fields.children];
+    const increase = document.getElementById('increase');
+    const status = document.getElementById('level-status');
+    const difficulty = document.getElementById('difficulty');
+    const obstacles = document.getElementById('obstacles');
+    const result = document.getElementById('result');
+    const expected = { contact: 'Ada Torres', email: 'ada@example.test', department: 'Procurement',
+        reference: 'PO-2048', units: '3', city: 'Lima', notes: 'Ship together.', confirmation: true };
+    const controls = Object.fromEntries(Object.keys(expected).map(key => [key, document.getElementById(key)]));
+    let submit = document.getElementById('submit-order');
+    let level = 0, reference;
+    const names = ['Baseline', 'Moved geometry', 'Changed order', 'Nested wrappers', 'Replaced controls', 'New IDs and names', 'Repeated labels'];
+    const descriptions = ['Fields use a shifted layout.', 'Field groups use a new DOM and tab order.',
+        'Two nested wrappers change each field path.', 'Controls were replaced; old element references are detached.',
+        'Control IDs and names were regenerated.', 'Reference order comes first and repeats labels and Submit order. Only Current order can pass.'];
+    function showLevel() {
+        status.textContent = `Level ${level} of 6: ${names[level]}.` + (level === 6 ? ' Maximum difficulty.' : '');
+        difficulty.value = level;
+        increase.disabled = level === 6;
+        obstacles.replaceChildren(...(level ? descriptions.slice(0, level) : ['None. Stable native controls.']).map(text => {
+            const item = document.createElement('li');
+            item.textContent = text;
+            return item;
+        }));
+    }
+    function clearAttempt() {
+        form.reset();
+        reference?.reset();
+        result.textContent = 'Waiting for an order.';
+        delete result.dataset.status;
+        AAProgress.set('case-mutation.html', false);
+    }
+    function rename(control) {
+        const label = control.closest('.fg')?.querySelector('label');
+        control.id = control.name = 'm-' + crypto.randomUUID();
+        if (label) label.htmlFor = control.id;
+    }
+    function report(passed, values) {
+        result.dataset.status = passed ? 'passed' : 'failed';
+        result.textContent = JSON.stringify({ status: result.dataset.status, ...values });
+        AAProgress.set('case-mutation.html', passed);
+    }
+    increase.addEventListener('click', () => {
+        if (level === 6) return;
+        level++;
+        if (level === 1) fields.classList.add('shifted');
+        if (level === 2) fields.append(...[...groups].reverse());
+        if (level === 3) groups.forEach(group => {
+            const outer = document.createElement('div'), inner = document.createElement('div');
+            outer.className = inner.className = 'mutation-wrap';
+            inner.append(...group.childNodes);
+            outer.append(inner);
+            group.append(outer);
+        });
+        if (level === 4) {
+            Object.keys(controls).forEach(key => {
+                const replacement = controls[key].cloneNode(true);
+                controls[key].replaceWith(replacement);
+                controls[key] = replacement;
+            });
+            const replacement = submit.cloneNode(true);
+            submit.replaceWith(replacement);
+            submit = replacement;
+        }
+        if (level === 5) [...Object.values(controls), submit].forEach(rename);
+        if (level === 6) {
+            reference = form.cloneNode(true);
+            reference.id = 'reference-order';
+            reference.setAttribute('aria-labelledby', 'reference-title');
+            const heading = reference.querySelector('h2');
+            heading.id = 'reference-title';
+            heading.textContent = 'Reference order';
+            reference.querySelector('.fields').id = 'reference-fields';
+            reference.querySelectorAll('input, select, textarea, button').forEach(rename);
+            reference.addEventListener('submit', event => {
+                event.preventDefault();
+                report(false, { context: 'Reference order', reason: 'Use the Current order form.' });
+            });
+            form.before(reference);
+        }
+        clearAttempt();
+        showLevel();
+    });
+    document.getElementById('clear').addEventListener('click', clearAttempt);
+    document.getElementById('reset-ladder').addEventListener('click', () => {
+        reference?.remove();
+        reference = undefined;
+        groups.forEach(group => {
+            const outer = group.querySelector('.mutation-wrap');
+            if (outer) group.replaceChildren(...outer.firstElementChild.childNodes);
+        });
+        fields.append(...groups);
+        fields.classList.remove('shifted');
+        Object.entries(controls).forEach(([key, control]) => {
+            const label = control.labels[0];
+            control.id = control.name = key;
+            label.htmlFor = key;
+        });
+        submit.id = submit.name = 'submit-order';
+        level = 0;
+        clearAttempt();
+        showLevel();
+    });
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const values = Object.fromEntries(Object.entries(controls).map(([key, control]) =>
+            [key, key === 'confirmation' ? control.checked : control.value]));
+        report(Object.entries(expected).every(([key, value]) => values[key] === value), values);
+    });
+})();
+</script>
+</body>
+</html>
