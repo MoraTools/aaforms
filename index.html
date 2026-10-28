@@ -9,10 +9,10 @@
     <style>
         .catalog { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--theme-line, #b6d2e6); }
         .catalog li { border-bottom: 1px solid var(--theme-line, #b6d2e6); }
-        .sap-link { display: block; padding: 18px 12px; text-decoration: none; color: var(--theme-heading, #005288); }
-        .sap-link strong { display: block; font-size: 1.1rem; }
-        .sap-link span { display: block; color: var(--theme-muted, #3a4350); margin-top: 4px; }
-        .sap-link:hover { background: var(--theme-tint, #e7f3fa); }
+        .sap-link, .check-link { display: block; padding: 18px 12px; text-decoration: none; color: var(--theme-heading, #005288); }
+        .check-link strong, .sap-link strong { display: block; font-size: 1.1rem; }
+        .check-link span, .sap-link span { display: block; color: var(--theme-muted, #3a4350); margin-top: 4px; }
+        .check-link:hover, .sap-link:hover { background: var(--theme-tint, #e7f3fa); }
         .sap-link .completion { font-size: .85rem; font-weight: 600; }
         .sap-link.completed .completion { color: var(--theme-success, #176538); }
         progress { display: block; width: 100%; height: 12px; accent-color: var(--theme-success, #176538); margin-bottom: 24px; }
@@ -39,6 +39,11 @@
         <li><a class="sap-link" href="case-canvas.html"><strong>9. Painted seat map</strong><span>No per-seat DOM targets; the same coordinates select another seat.</span><span class="completion">Not completed</span></a></li>
         <li><a class="sap-link" href="case-closed.html"><strong>10. Closed supplier form</strong><span>Fields behind a closed shadow root.</span><span class="completion">Not completed</span></a></li>
         <li><a class="sap-link" href="case-opaque.html"><strong>11. Isolated supplier portal</strong><span>Two opaque frames, a shadow root, and replaced documents.</span><span class="completion">Not completed</span></a></li>
+    </ul>
+    <h2>Runtime checks</h2>
+    <ul class="catalog" aria-label="Runtime checks without completion progress">
+        <li><a class="check-link" href="case-dialogs.html"><strong>Case: dialogs</strong><span>Alert, confirm and prompt dialogs, a delayed alert, and an alert at load.</span></a></li>
+        <li><a class="check-link" href="case-keys.html"><strong>Case: keys</strong><span>Tab order, a text area, Enter submit, and a log of key events.</span></a></li>
     </ul>
     <a class="back" href="HARD-CASES.md">Test tasks and acceptance checks</a>
 </main>

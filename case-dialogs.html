@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // Runs first so the dialog opens while the page is still loading.
+        if (new URLSearchParams(location.search).get('onload') === 'alert') alert('R2 onload');
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Case: dialogs</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
+<main class="container">
+    <div class="intro">
+        <h1>Case: dialogs</h1>
+        <p class="desc">Each button opens a JavaScript dialog. While a dialog is open, the page cannot run scripts.
+            Open the page with <code>?onload=alert</code> to open an alert at load.</p>
+    </div>
+    <div class="toolbar">
+        <button id="alert-btn" type="button">Alert</button>
+        <button id="confirm-btn" type="button">Confirm</button>
+        <button id="prompt-btn" type="button">Prompt</button>
+        <button id="delayed-alert-btn" type="button">Alert after 1.5 s</button>
+    </div>
+    <h2>Results</h2>
+    <output id="confirm-result" aria-live="polite">confirm: none</output>
+    <output id="prompt-result" aria-live="polite">prompt: none</output>
+    <output id="delayed-state" aria-live="polite">idle</output>
+    <h2>After the dialog</h2>
+    <div class="fg"><label for="after-input">Text</label><input id="after-input" name="after" type="text" autocomplete="off"></div>
+    <output id="after-result" for="after-input" aria-live="polite"></output>
+    <h2>Event log</h2>
+    <output id="log" aria-live="polite"></output>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
+</main>
+<script>
+(() => {
+    const $ = id => document.getElementById(id);
+    const log = text => { $('log').textContent += text + '\n'; };
+    $('alert-btn').addEventListener('click', () => {
+        log('alert-btn pressed');
+        alert('R2 alert');
+        log('alert: closed');
+    });
+    $('confirm-btn').addEventListener('click', () => {
+        log('confirm-btn pressed');
+        const text = `confirm: ${confirm('R2 confirm')}`;
+        $('confirm-result').textContent = text;
+        log(text);
+    });
+    $('prompt-btn').addEventListener('click', () => {
+        log('prompt-btn pressed');
+        const text = `prompt: ${prompt('R2 prompt', 'default')}`;
+        $('prompt-result').textContent = text;
+        log(text);
+    });
+    $('delayed-alert-btn').addEventListener('click', () => {
+        log('delayed-alert-btn pressed');
+        $('delayed-state').textContent = 'armed';
+        setTimeout(() => {
+            alert('R2 delayed alert');
+            $('delayed-state').textContent = 'closed';
+            log('delayed alert: closed');
+        }, 1500);
+    });
+    const mirror = () => { $('after-result').textContent = $('after-input').value; };
+    $('after-input').addEventListener('input', mirror);
+    $('after-input').addEventListener('change', mirror);
+})();
+</script>
+</body>
+</html>

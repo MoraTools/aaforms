@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Case: keys</title>
+    <link rel="stylesheet" href="style.css?v=04ef37f97167">
+    <link rel="stylesheet" href="hard-cases.css?v=b729ed92b5d3">
+    <style>
+        #area { font: inherit; padding: 6px 10px; min-height: 80px; }
+    </style>
+    <link rel="stylesheet" href="theme.css?v=b3e596a750fe">
+    <script src="theme.js?v=04c400b3c490"></script>
+</head>
+<body class="hard-case">
+<main class="container">
+    <div class="intro">
+        <h1>Case: keys</h1>
+        <p class="desc">Fields for typed key names such as <code>[TAB]</code>, <code>[ENTER]</code> and
+            <code>[CTRL DOWN]</code>. The key log shows the last 50 <code>keydown</code> events as
+            <code>key code ctrl shift alt</code>.</p>
+    </div>
+    <form id="tab-form" autocomplete="off" onsubmit="return false">
+        <div class="fg"><label for="first">First</label><input id="first" name="first" type="text"></div>
+        <div class="fg"><label for="second">Second</label><input id="second" name="second" type="text"></div>
+        <div class="fg"><label for="area">Lines</label><textarea id="area" name="area" rows="4"></textarea></div>
+    </form>
+    <form id="enter-form" autocomplete="off">
+        <div class="fg"><label for="enter-input">Submit with Enter</label><input id="enter-input" name="enter" type="text"></div>
+    </form>
+    <output id="enter-result" aria-live="polite">submitted: none</output>
+    <h2>Key log</h2>
+    <output id="key-log"></output>
+    <a class="back" href="index.html">&larr; Back to Main Menu</a>
+</main>
+<script>
+(() => {
+    const lines = [];
+    document.addEventListener('keydown', e => {
+        lines.push([e.key === ' ' ? 'Space' : e.key, e.code, +e.ctrlKey, +e.shiftKey, +e.altKey].join(' '));
+        if (lines.length > 50) lines.shift();
+        document.getElementById('key-log').textContent = lines.join('\n');
+    }, true);
+    document.getElementById('enter-form').addEventListener('submit', e => {
+        e.preventDefault();
+        document.getElementById('enter-result').textContent = `submitted: ${document.getElementById('enter-input').value}`;
+    });
+})();
+</script>
+</body>
+</html>
